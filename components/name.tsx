@@ -5,7 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 export default function Name() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["examples"],
-    queryFn: async () => (await axiosInstance.get("/examples")).data,
+    queryFn: async () =>
+      (await axiosInstance.get("/examples", { params: { name: "Luiz" } })).data,
   });
 
   if (isLoading) return <p>Loading...</p>;
