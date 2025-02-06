@@ -1,6 +1,7 @@
 "use client";
 import { axiosInstance } from "@/lib/axios-instance";
 import { useQuery } from "@tanstack/react-query";
+import { Button } from "./ui/button";
 
 export default function Name() {
   const { data, isLoading, error } = useQuery({
@@ -12,5 +13,10 @@ export default function Name() {
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
-  return <span>{data.message}</span>;
+  return (
+    <>
+      <span>{data.message}</span>
+      <Button onClick={() => console.log("click")}>Your button</Button>
+    </>
+  );
 }
