@@ -1,7 +1,7 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { SignOutButton, useAuth } from "@clerk/nextjs";
+import { SignOutButton } from "@clerk/nextjs";
 import { LogOut, User2 } from "lucide-react";
 import { IconName } from "lucide-react/dynamic";
 import AppSidebarFooter from "./app-sidebar-footer";
@@ -23,10 +23,19 @@ export default function AppSidebarFooterWrapper({
   fullName,
   email,
 }: AppSidebarFooterWrapperProps) {
-  const { has } = useAuth();
+  // const { user } = useUser();
 
-  if (!has) return null;
-  const canManageSettings = has({ permission: "org:team_settings:manage" });
+  // if (!has) return null;
+
+  // const canManageSettings = has({ permission: "org:sys_profile:manage" });
+  // console.log(
+  //   "canManageSettings",
+  //   canManageSettings,
+  //   "orgId",
+  //   orgId,
+  //   "orgRole",
+  //   orgRole
+  // );
 
   const items: MenuItem[] = [
     {
@@ -34,7 +43,7 @@ export default function AppSidebarFooterWrapper({
       url: "#",
       icon: "send",
     },
-    ...(canManageSettings
+    ...(true //orgId && canManageSettings
       ? ([
           {
             title: "Organização",

@@ -1,5 +1,6 @@
 import { AppSidebar } from "@/components/app-sidebar/app-sidebar";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import { auth } from "@clerk/nextjs/server";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { cookies } from "next/headers";
@@ -26,8 +27,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
-  const defaultOpen = cookieStore.get("sidebar:state")?.value === "true";
+  const { userId, redirectToSignIn } = await auth();
+  if (!userId) return redirectToSignIn();
+
+  const defaultOpen = (await cookies()).get("sidebar:state")?.value === "true";
 
   return (
     <html lang="en">

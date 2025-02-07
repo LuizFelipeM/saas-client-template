@@ -1,13 +1,13 @@
 "use client";
-import { axiosInstance } from "@/lib/axios-instance";
+
+import { examplesApi } from "@/lib/api/examples-api";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "./ui/button";
 
 export default function Name() {
   const { data, isLoading, error } = useQuery({
     queryKey: ["examples"],
-    queryFn: async () =>
-      (await axiosInstance.get("/examples", { params: { name: "Luiz" } })).data,
+    queryFn: async () => await examplesApi.greetings("Luiz"),
   });
 
   if (isLoading) return <p>Loading...</p>;
@@ -15,7 +15,7 @@ export default function Name() {
 
   return (
     <>
-      <span>{data.message}</span>
+      <span>{data?.message}</span>
       <Button onClick={() => console.log("click")}>Your button</Button>
     </>
   );
