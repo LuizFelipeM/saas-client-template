@@ -40,11 +40,14 @@ const Content = React.memo<{
   );
 });
 
-const ContentHeader = React.memo<{ children: React.ReactNode }>(
-  function Header({ children }) {
-    return <DropdownMenuLabel>{children}</DropdownMenuLabel>;
-  }
-);
+const ContentHeader = React.memo<{
+  children: React.ReactNode;
+  className?: string;
+}>(function Header({ children, className }) {
+  return (
+    <DropdownMenuLabel className={className}>{children}</DropdownMenuLabel>
+  );
+});
 
 const ContentSeparator = React.memo(function Separator() {
   return <DropdownMenuSeparator />;

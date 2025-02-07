@@ -1,10 +1,15 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MenuItem } from "@/types/menu-item";
 import { User2 } from "lucide-react";
 import { IconName } from "lucide-react/dynamic";
 import AppSidebarFooter from "./app-sidebar-footer";
+
+interface MenuItem {
+  title: string;
+  url: string;
+  icon: IconName;
+}
 
 interface AppSidebarFooterWrapperProps {
   avatar?: string;
@@ -17,7 +22,7 @@ export default function AppSidebarFooterWrapper({
   fullName,
   email,
 }: AppSidebarFooterWrapperProps) {
-  const footerItems: MenuItem[] = [
+  const items: MenuItem[] = [
     {
       title: "Organização",
       url: "#",
@@ -47,22 +52,27 @@ export default function AppSidebarFooterWrapper({
         <User2 />
         <span>{fullName ?? email ?? "Configurações"}</span>
       </AppSidebarFooter.Header>
+
       <AppSidebarFooter.Content>
-        <AppSidebarFooter.ContentHeader>
+        <AppSidebarFooter.ContentHeader className="flex gap-2">
           <Avatar>
             <AvatarImage src={avatar} />
             <AvatarFallback>
               {getFallback(fullName ?? "Uknown User")}
             </AvatarFallback>
           </Avatar>
+          <div className="grid flex-1 text-left text-sm leading-tight font-normal">
+            <span className="truncate font-semibold">{fullName}</span>
+            <span className="truncate text-xs">{email}</span>
+          </div>
         </AppSidebarFooter.ContentHeader>
 
         <AppSidebarFooter.ContentSeparator />
 
-        {footerItems.map(({ icon, title, url }, i) => (
+        {items.map(({ icon, title, url }, i) => (
           <AppSidebarFooter.ContentItem
             key={`${title}-${i}`}
-            icon={icon as IconName}
+            icon={icon}
             title={title}
             url={url}
           />

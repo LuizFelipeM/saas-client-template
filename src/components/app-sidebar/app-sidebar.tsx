@@ -7,14 +7,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
 } from "@/components/ui/sidebar";
-import { MenuItem } from "@/types/menu-item";
 import { currentUser } from "@clerk/nextjs/server";
-import AppSidebarFooterWrapper from "./app-sidebar-footer-wrapper";
+import AppSidebarFooterWrapper from "./app-sidebar-footer/app-sidebar-footer-wrapper";
 
 export async function AppSidebar() {
   const user = await currentUser();
-  const items: MenuItem[] = [];
+  const items: Record<string, string>[] = [];
 
   return (
     <Sidebar collapsible="icon">
@@ -47,6 +47,8 @@ export async function AppSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
+
+      <SidebarRail />
     </Sidebar>
   );
 }
