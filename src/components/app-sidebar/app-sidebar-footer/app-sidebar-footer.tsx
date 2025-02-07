@@ -51,17 +51,28 @@ const ContentSeparator = React.memo(function Separator() {
   return <DropdownMenuSeparator />;
 });
 
+const ContentLink = React.memo<{ title: string; icon: IconName; url: string }>(
+  function ContentLink({ icon, title, url }) {
+    return (
+      <DropdownMenuItem key={title}>
+        <a
+          href={url}
+          className="cursor-default text-sm flex gap-2 items-center"
+        >
+          {icon && <DynamicIcon name={icon} className="h-4 w-4" />}
+          <span>{title}</span>
+        </a>
+      </DropdownMenuItem>
+    );
+  }
+);
+
 const ContentItem = React.memo<{
-  title: string;
-  url: string;
-  icon: IconName;
-}>(function Item({ icon, title, url }) {
+  children?: React.ReactNode;
+}>(function Item({ children }) {
   return (
-    <DropdownMenuItem key={title}>
-      <a href={url} className="cursor-default text-sm flex gap-2 items-center">
-        {icon && <DynamicIcon name={icon} className="h-4 w-4" />}
-        <span>{title}</span>
-      </a>
+    <DropdownMenuItem className="cursor-default text-sm flex gap-2 items-center">
+      {children}
     </DropdownMenuItem>
   );
 });
@@ -76,6 +87,7 @@ interface AppSidebarFooterCompound extends React.FC<AppSidebarFooterProps> {
   ContentHeader: typeof ContentHeader;
   ContentSeparator: typeof ContentSeparator;
   ContentItem: typeof ContentItem;
+  ContentLink: typeof ContentLink;
 }
 
 const AppSidebarFooter: AppSidebarFooterCompound = ({ children }) => {
@@ -87,5 +99,6 @@ AppSidebarFooter.Content = Content;
 AppSidebarFooter.ContentHeader = ContentHeader;
 AppSidebarFooter.ContentSeparator = ContentSeparator;
 AppSidebarFooter.ContentItem = ContentItem;
+AppSidebarFooter.ContentLink = ContentLink;
 
 export default AppSidebarFooter;

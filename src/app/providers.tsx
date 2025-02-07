@@ -1,6 +1,7 @@
 "use client";
 
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { useToast } from "@/hooks/use-toast";
 import { ClerkProvider } from "@clerk/nextjs";
 import {
   QueryCache,
@@ -14,10 +15,16 @@ interface ProvidersProps {
 }
 
 export function Providers({ children, defaultOpen }: ProvidersProps) {
+  const { toast } = useToast();
+
   const queryClient = new QueryClient({
     queryCache: new QueryCache({
       onError: (error) => {
-        // toast.error(`Algo inesperado aconteceu: ${error.message}`)
+        toast({
+          title: "Algo deu errado!",
+          description:
+            "Tivemos um erro inesperado, por favor, tente novamente ou entre em contato.",
+        });
         console.error(error);
       },
     }),

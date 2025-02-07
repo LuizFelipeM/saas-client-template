@@ -1,7 +1,8 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { User2 } from "lucide-react";
+import { SignOutButton, useAuth } from "@clerk/nextjs";
+import { LogOut, User2 } from "lucide-react";
 import { IconName } from "lucide-react/dynamic";
 import AppSidebarFooter from "./app-sidebar-footer";
 
@@ -22,27 +23,37 @@ export default function AppSidebarFooterWrapper({
   fullName,
   email,
 }: AppSidebarFooterWrapperProps) {
+  const { has } = useAuth();
+
+  if (!has) return null;
+  const canManageSettings = has({ permission: "org:team_settings:manage" });
+
   const items: MenuItem[] = [
-    {
-      title: "Organização",
-      url: "#",
-      icon: "building-2",
-    },
-    {
-      title: "Cobrança",
-      url: "#",
-      icon: "receipt",
-    },
     {
       title: "Contato",
       url: "#",
       icon: "send",
     },
+    ...(canManageSettings
+      ? ([
+          {
+            title: "Organização",
+            url: "#",
+            icon: "building-2",
+          },
+          {
+            title: "Cobrança",
+            url: "#",
+            icon: "receipt",
+          },
+        ] as MenuItem[])
+      : []),
   ];
 
   const getFallback = (input: string): string => {
     const words = input.trim().split(/\s+/);
-    if (words.length < 2) return words[0]?.charAt(0) ?? "";
+    if (words.length < 2)
+      return words[0] ? words[0]?.charAt(0) + words[0]?.charAt(1) : "";
     return words[0][0] + words[1][0];
   };
 
@@ -62,21 +73,34 @@ export default function AppSidebarFooterWrapper({
             </AvatarFallback>
           </Avatar>
           <div className="grid flex-1 text-left text-sm leading-tight font-normal">
-            <span className="truncate font-semibold">{fullName}</span>
-            <span className="truncate text-xs">{email}</span>
+            <span className="truncate font-semibold">
+              {fullName ?? "Configurações"}
+            </span>
+            <span className="truncate text-xs">{email ?? "-"}</span>
           </div>
         </AppSidebarFooter.ContentHeader>
 
         <AppSidebarFooter.ContentSeparator />
 
         {items.map(({ icon, title, url }, i) => (
-          <AppSidebarFooter.ContentItem
+          <AppSidebarFooter.ContentLink
             key={`${title}-${i}`}
             icon={icon}
             title={title}
             url={url}
           />
         ))}
+
+        <AppSidebarFooter.ContentSeparator />
+
+        <AppSidebarFooter.ContentItem>
+          <SignOutButton>
+            <button className="cursor-default text-sm flex gap-2 items-center">
+              <LogOut className="h-4 w-4" />
+              Sair
+            </button>
+          </SignOutButton>
+        </AppSidebarFooter.ContentItem>
       </AppSidebarFooter.Content>
     </AppSidebarFooter>
   );
