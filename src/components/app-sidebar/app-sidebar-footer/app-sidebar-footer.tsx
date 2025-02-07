@@ -6,25 +6,23 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { SidebarMenuAction, SidebarMenuButton } from "@/components/ui/sidebar";
-import { ChevronsUpDown } from "lucide-react";
+import { SidebarMenuButton } from "@/components/ui/sidebar";
+import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { DynamicIcon, IconName } from "lucide-react/dynamic";
 import React from "react";
 
 const Header = React.memo<{
   children: React.ReactNode;
-}>(function Header({ children }) {
+  className?: string;
+}>(function Header({ children, className }) {
   return (
     <DropdownMenuTrigger asChild>
-      <SidebarMenuButton>
-        <h4 className="text-sm font-semibold flex gap-2 items-center">
-          {children}
-        </h4>
-        <SidebarMenuAction asChild>
-          <ChevronsUpDown />
-        </SidebarMenuAction>
+      <SidebarMenuButton
+        className={`text-sm font-semibold ${className}`}
+        asChild
+      >
+        <span>{children}</span>
       </SidebarMenuButton>
     </DropdownMenuTrigger>
   );
@@ -61,9 +59,7 @@ const ContentItem = React.memo<{
   return (
     <DropdownMenuItem key={title}>
       <a href={url} className="cursor-default text-sm flex gap-2 items-center">
-        {typeof icon === "string" && (
-          <DynamicIcon name={icon} className="h-4 w-4" />
-        )}
+        {icon && <DynamicIcon name={icon} className="h-4 w-4" />}
         <span>{title}</span>
       </a>
     </DropdownMenuItem>

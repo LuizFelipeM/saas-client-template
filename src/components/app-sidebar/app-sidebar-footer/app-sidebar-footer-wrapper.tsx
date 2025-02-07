@@ -48,7 +48,7 @@ export default function AppSidebarFooterWrapper({
 
   return (
     <AppSidebarFooter>
-      <AppSidebarFooter.Header>
+      <AppSidebarFooter.Header className="cursor-pointer">
         <User2 />
         <span>{fullName ?? email ?? "Configurações"}</span>
       </AppSidebarFooter.Header>
