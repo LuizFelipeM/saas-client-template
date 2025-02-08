@@ -1,4 +1,4 @@
-import { Integration } from "@/app/data/integrations";
+import { Integration } from "@/app/(private)/data/integrations";
 import { Card, CardContent } from "@/components/ui/card";
 
 type IntegrationCardProps = {

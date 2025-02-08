@@ -1,4 +1,4 @@
-import { Integration } from "@/app/data/integrations";
+import { Integration } from "@/app/(private)/data/integrations";
 import IntegrationCard from "./integration-card";
 
 type IntegrationGridProps = {
