@@ -1,6 +1,6 @@
 "use client";
 
-import { examplesService } from "@/lib/api/examples.service";
+import { examplesService } from "@/lib/services/examples.service";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "./ui/button";
 
