@@ -1,6 +1,35 @@
-import { clerkMiddleware } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export default clerkMiddleware();
+const routeToRedirect = "/dashboard";
+
+const publicRoutes = [
+  { path: "/pricing", type: "next" },
+  { path: "/sign-in", type: "redirect" },
+] as const;
+
+const isNextPublicRoute = createRouteMatcher(
+  publicRoutes.filter((r) => r.type === "next").map((r) => r.path)
+);
+const isRedirectPublicRoute = createRouteMatcher(
+  publicRoutes.filter((r) => r.type === "redirect").map((r) => r.path)
+);
+
+export default clerkMiddleware(
+  async (auth, req: NextRequest) => {
+    const { userId, redirectToSignIn } = await auth();
+
+    if (userId) {
+      if (isRedirectPublicRoute(req))
+        return NextResponse.redirect(new URL(routeToRedirect, req.url));
+
+      return NextResponse.next();
+    } else if (!(isRedirectPublicRoute(req) && isNextPublicRoute(req))) {
+      return redirectToSignIn({ returnBackUrl: req.url });
+    }
+  }
+  // { debug: true }
+);
 
 export const config = {
   matcher: [

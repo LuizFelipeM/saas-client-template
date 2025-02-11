@@ -103,7 +103,7 @@ export default function AppSidebarFooterWrapper({
         <AppSidebarFooter.ContentSeparator />
 
         <AppSidebarFooter.ContentItem>
-          <SignOutButton>
+          <SignOutButton redirectUrl="/sign-in">
             <button className="cursor-default text-sm flex gap-2 items-center">
               <LogOut className="h-4 w-4" />
               Sair
