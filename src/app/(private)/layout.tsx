@@ -1,6 +1,7 @@
 import { AppSidebar } from "@/components/app-sidebar/app-sidebar";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import { auth } from "@clerk/nextjs/server";
+import { menuItems } from "./menu-items";
 
 export default async function PrivateLayout({
   children,
@@ -12,7 +13,7 @@ export default async function PrivateLayout({
 
   return (
     <>
-      <AppSidebar />
+      <AppSidebar items={menuItems} />
       <SidebarInset className="flex-1">
         <header className="flex items-center h-16 px-4 border-b">
           <SidebarTrigger />

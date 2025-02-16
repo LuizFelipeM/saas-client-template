@@ -1,52 +1,58 @@
+import { MenuItem } from "@/types/menu-item";
+import { currentUser } from "@clerk/nextjs/server";
+import { ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 import {
   Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/ui/sidebar";
-import { currentUser } from "@clerk/nextjs/server";
+} from "../ui/sidebar";
+import { AppSidebarContentWrapper } from "./app-sidebar-content/app-sidebar-content-wrapper";
 import AppSidebarFooterWrapper from "./app-sidebar-footer/app-sidebar-footer-wrapper";
 
-export async function AppSidebar() {
+export async function AppSidebar({ items }: { items: MenuItem[] }) {
   const user = await currentUser();
-  const items: Record<string, string>[] = [];
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-
-      <SidebarFooter>
+      <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <AppSidebarFooterWrapper
-              avatar={user?.imageUrl}
-              fullName={user?.fullName}
-              email={user?.primaryEmailAddress?.emailAddress}
-            />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton>
+                  Select Workspace
+                  <ChevronDown className="ml-auto" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-[--radix-popper-anchor-width]">
+                <DropdownMenuItem>
+                  <span>Acme Inc</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <span>Acme Corp.</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </SidebarMenuItem>
         </SidebarMenu>
-      </SidebarFooter>
+      </SidebarHeader>
+
+      <AppSidebarContentWrapper items={items} />
+
+      <AppSidebarFooterWrapper
+        avatar={user?.imageUrl}
+        fullName={user?.fullName}
+        email={user?.primaryEmailAddress?.emailAddress}
+      />
 
       <SidebarRail />
     </Sidebar>

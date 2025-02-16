@@ -1,16 +1,10 @@
 "use client";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { MenuItemUrl } from "@/types/menu-item";
 import { SignOutButton } from "@clerk/nextjs";
-import { LogOut, User2 } from "lucide-react";
-import { IconName } from "lucide-react/dynamic";
-import AppSidebarFooter from "./app-sidebar-footer";
-
-interface MenuItem {
-  title: string;
-  url: string;
-  icon: IconName;
-}
+import { Building2, LogOut, Receipt, Send, User2 } from "lucide-react";
+import { AppSidebarFooter } from "./app-sidebar-footer";
 
 interface AppSidebarFooterWrapperProps {
   avatar?: string;
@@ -37,25 +31,25 @@ export default function AppSidebarFooterWrapper({
   //   orgRole
   // );
 
-  const items: MenuItem[] = [
+  const items: MenuItemUrl[] = [
     {
       title: "Contato",
       url: "#",
-      icon: "send",
+      icon: Send,
     },
     ...(true //orgId && canManageSettings
-      ? ([
+      ? [
           {
             title: "Organização",
             url: "#",
-            icon: "building-2",
+            icon: Building2,
           },
           {
             title: "Cobrança",
             url: "#",
-            icon: "receipt",
+            icon: Receipt,
           },
-        ] as MenuItem[])
+        ]
       : []),
   ];
 

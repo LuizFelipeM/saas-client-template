@@ -7,9 +7,15 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { SidebarMenuButton } from "@/components/ui/sidebar";
+import {
+  SidebarFooter,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
 import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
-import { DynamicIcon, IconName } from "lucide-react/dynamic";
+import { LucideProps } from "lucide-react";
+import Link from "next/link";
 import React from "react";
 
 const Header = React.memo<{
@@ -51,21 +57,25 @@ const ContentSeparator = React.memo(function Separator() {
   return <DropdownMenuSeparator />;
 });
 
-const ContentLink = React.memo<{ title: string; icon: IconName; url: string }>(
-  function ContentLink({ icon, title, url }) {
-    return (
-      <DropdownMenuItem key={title}>
-        <a
-          href={url}
-          className="cursor-default text-sm flex gap-2 items-center"
-        >
-          {icon && <DynamicIcon name={icon} className="h-4 w-4" />}
-          <span>{title}</span>
-        </a>
-      </DropdownMenuItem>
-    );
-  }
-);
+const ContentLink = React.memo<{
+  title: string;
+  icon: React.ForwardRefExoticComponent<
+    Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>
+  >;
+  url: string;
+}>(function ContentLink({ icon: Icon, title, url }) {
+  return (
+    <DropdownMenuItem key={title}>
+      <Link
+        href={url}
+        className="cursor-default text-sm flex gap-2 items-center"
+      >
+        <Icon className="h-4 w-4" />
+        <span>{title}</span>
+      </Link>
+    </DropdownMenuItem>
+  );
+});
 
 const ContentItem = React.memo<{
   children?: React.ReactNode;
@@ -91,7 +101,15 @@ interface AppSidebarFooterCompound extends React.FC<AppSidebarFooterProps> {
 }
 
 const AppSidebarFooter: AppSidebarFooterCompound = ({ children }) => {
-  return <DropdownMenu>{children}</DropdownMenu>;
+  return (
+    <SidebarFooter>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          <DropdownMenu>{children}</DropdownMenu>
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarFooter>
+  );
 };
 
 AppSidebarFooter.Header = Header;
@@ -101,4 +119,4 @@ AppSidebarFooter.ContentSeparator = ContentSeparator;
 AppSidebarFooter.ContentItem = ContentItem;
 AppSidebarFooter.ContentLink = ContentLink;
 
-export default AppSidebarFooter;
+export { AppSidebarFooter };

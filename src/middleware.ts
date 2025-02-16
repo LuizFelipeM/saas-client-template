@@ -19,14 +19,20 @@ export default clerkMiddleware(
   async (auth, req: NextRequest) => {
     const { userId, redirectToSignIn } = await auth();
 
-    if (userId) {
-      if (isRedirectPublicRoute(req))
-        return NextResponse.redirect(new URL(routeToRedirect, req.url));
+    if (userId && isRedirectPublicRoute(req)) {
+      console.log(`go to to ${routeToRedirect}`);
+      return NextResponse.redirect(new URL(routeToRedirect, req.url));
+    }
 
-      return NextResponse.next();
-    } else if (!(isRedirectPublicRoute(req) && isNextPublicRoute(req))) {
+    const isRedirect = isRedirectPublicRoute(req);
+    const isNext = isNextPublicRoute(req);
+    if (!userId && !isRedirect && !isNext) {
+      console.log(`go to SignIn isRedirect=${isRedirect} isNext=${isNext}`);
       return redirectToSignIn({ returnBackUrl: req.url });
     }
+
+    console.log("go next");
+    return NextResponse.next();
   }
   // { debug: true }
 );
