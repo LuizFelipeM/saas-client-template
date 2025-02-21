@@ -3,7 +3,14 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MenuItemUrl } from "@/types/menu-item";
 import { SignOutButton } from "@clerk/nextjs";
-import { Building2, LogOut, Receipt, Send, User2 } from "lucide-react";
+import {
+  Building2,
+  LogOut,
+  MessageCircleMore,
+  Receipt,
+  Send,
+  User2,
+} from "lucide-react";
 import { AppSidebarFooter } from "./app-sidebar-footer";
 
 interface AppSidebarFooterWrapperProps {
@@ -36,6 +43,11 @@ export default function AppSidebarFooterWrapper({
       title: "Contato",
       url: "#",
       icon: Send,
+    },
+    {
+      title: "Feedback",
+      url: "/feedback",
+      icon: MessageCircleMore,
     },
     ...(true //orgId && canManageSettings
       ? [
