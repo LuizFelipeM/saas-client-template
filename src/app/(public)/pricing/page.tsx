@@ -37,10 +37,18 @@ export default function PricingPage() {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        const response = await fetch("/api/plans");
+        const response = await fetch("/api/public/plans", {
+          method: "GET",
+          credentials: "same-origin",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
         if (!response.ok) {
           throw new Error("Failed to fetch plans");
         }
+
         const data = await response.json();
         setPlans(data);
       } catch (error) {

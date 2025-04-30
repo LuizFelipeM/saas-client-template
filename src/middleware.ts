@@ -1,38 +1,41 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware, ClerkMiddlewareAuth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import {
+  isNextPublicRoute,
+  isRedirectPublicRoute,
+  routeToRedirect,
+} from "./app/(public)/publicRoutes";
 
-const routeToRedirect = "/dashboard";
+const appRouteValidator = async (
+  auth: ClerkMiddlewareAuth,
+  req: NextRequest
+): Promise<Response> => {
+  const { userId, redirectToSignIn } = await auth();
 
-const publicRoutes = [
-  { path: "/pricing", type: "next" },
-  { path: "/sign-in", type: "redirect" },
-] as const;
+  const isRedirect = isRedirectPublicRoute(req);
+  if (userId && isRedirect)
+    return NextResponse.redirect(new URL(routeToRedirect, req.url));
 
-const isNextPublicRoute = createRouteMatcher(
-  publicRoutes.filter((r) => r.type === "next").map((r) => r.path)
-);
-const isRedirectPublicRoute = createRouteMatcher(
-  publicRoutes.filter((r) => r.type === "redirect").map((r) => r.path)
-);
+  const isNext = isNextPublicRoute(req);
+  if (!userId && !isRedirect && !isNext)
+    return redirectToSignIn({ returnBackUrl: req.url });
+
+  return NextResponse.next();
+};
 
 export default clerkMiddleware(
   async (auth, req: NextRequest) => {
-    const { userId, redirectToSignIn } = await auth();
+    const { pathname } = req.nextUrl;
 
-    if (userId && isRedirectPublicRoute(req)) {
-      console.log(`go to to ${routeToRedirect}`);
-      return NextResponse.redirect(new URL(routeToRedirect, req.url));
-    }
+    if (
+      /(\/(api|trpc)\/public|\/_next)/.test(pathname) ||
+      /\.(html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)$/.test(
+        pathname
+      )
+    )
+      return NextResponse.next();
 
-    const isRedirect = isRedirectPublicRoute(req);
-    const isNext = isNextPublicRoute(req);
-    if (!userId && !isRedirect && !isNext) {
-      console.log(`go to SignIn isRedirect=${isRedirect} isNext=${isNext}`);
-      return redirectToSignIn({ returnBackUrl: req.url });
-    }
-
-    console.log("go next");
-    return NextResponse.next();
+    return appRouteValidator(auth, req);
   }
   // { debug: true }
 );
