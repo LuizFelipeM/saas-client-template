@@ -1,0 +1,97 @@
+version: 1
+
+# Define resources
+resources:
+  company:
+    type: tenant
+    actions:
+      - view_dashboard
+      - edit_content
+      - manage_billing
+      - invite_user
+      - delete_company
+      - view_analytics
+      - manage_users
+    attributes:
+      - id: string
+      - name: string
+
+# Define roles
+roles:
+  owner:
+    permissions:
+      - action: view_dashboard
+        resource: company
+      - action: edit_content
+        resource: company
+      - action: manage_billing
+        resource: company
+      - action: invite_user
+        resource: company
+      - action: delete_company
+        resource: company
+      - action: view_analytics
+        resource: company
+      - action: manage_users
+        resource: company
+
+  admin:
+    permissions:
+      - action: view_dashboard
+        resource: company
+      - action: edit_content
+        resource: company
+      - action: view_billing
+        resource: company
+      - action: invite_user
+        resource: company
+      - action: view_analytics
+        resource: company
+      - action: manage_users
+        resource: company
+
+  editor:
+    permissions:
+      - action: view_dashboard
+        resource: company
+      - action: edit_content
+        resource: company
+      - action: view_analytics
+        resource: company
+
+  viewer:
+    permissions:
+      - action: view_dashboard
+        resource: company
+      - action: view_analytics
+        resource: company
+
+# Define role assignments
+role_assignments:
+  - role: owner
+    resource: company
+    conditions:
+      - attribute: role
+        operator: equals
+        value: owner
+
+  - role: admin
+    resource: company
+    conditions:
+      - attribute: role
+        operator: equals
+        value: admin
+
+  - role: editor
+    resource: company
+    conditions:
+      - attribute: role
+        operator: equals
+        value: editor
+
+  - role: viewer
+    resource: company
+    conditions:
+      - attribute: role
+        operator: equals
+        value: viewer 
