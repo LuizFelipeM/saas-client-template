@@ -30,11 +30,6 @@ enum SubscriptionStatus {
   UNPAID
 }
 
-enum BillingCycle {
-  MONTHLY
-  YEARLY
-}
-
 // Main tables
 model Company {
   id          String    @id @default(uuid())
@@ -85,15 +80,15 @@ model Plan {
   id              String      @id @default(uuid())
   name            String
   description     String?
-  stripePriceId   String      @unique
-  billingCycle    BillingCycle
+  stripeProductId String      @unique
   metadata        Json?
+  features        Json
   isActive        Boolean     @default(true)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
   // Relations
-  subscriptions   Subscription[]
+  subscriptions   Subscription[] @ignore
 
   @@map("plans")
 }
@@ -103,6 +98,7 @@ model Subscription {
   status                SubscriptionStatus
   stripeSubscriptionId  String              @unique
   currentPeriodEnd      DateTime
+  features              Json
   createdAt             DateTime            @default(now())
   updatedAt             DateTime            @updatedAt
 

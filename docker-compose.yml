@@ -1,0 +1,94 @@
+name: saas-template
+
+volumes:
+  # region Cloud services
+  # pgdata:
+  # rabbitmqdata:
+  # rabbitmqlog:
+  # endregion
+
+networks:
+  saas-template:
+    driver: bridge
+    attachable: true
+
+services:
+  # region Cloud services
+  # st-rabbitmq:
+  #   container_name: st-rabbitmq
+  #   image: rabbitmq:4-management-alpine
+  #   restart: always
+  #   environment:
+  #     RABBITMQ_DEFAULT_USER: admin
+  #     RABBITMQ_DEFAULT_PASS: password
+  #   ports:
+  #     - 5672:5672
+  #     - 15672:15672
+  #   expose:
+  #     - 5672
+  #     - 15672
+  #   volumes:
+  #     - rabbitmqdata:/var/lib/rabbitmq
+  #     - rabbitmqlog:/var/log/rabbitmq
+  #   networks:
+  #     - saas-template
+
+  # st-postgres:
+  #   container_name: st-postgres
+  #   image: postgres:17
+  #   restart: always
+  #   shm_size: 128mb
+  #   environment:
+  #     POSTGRES_DB: database
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: password
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #   networks:
+  #     - saas-template
+
+  # st-nginx:
+  #   container_name: st-nginx
+  #   image: nginx:latest
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf
+  #   ports:
+  #     - 80:80
+  #   depends_on:
+  #     - st-api
+  #   networks:
+  #     - saas-template
+  
+  st-ngrok:
+    container_name: st-ngrok
+    image: ngrok/ngrok:alpine
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    command:
+      - "start"
+      - "--all"
+      - "--config"
+      - "/etc/ngrok.yml"
+    volumes:
+      - ./ngrok.yml:/etc/ngrok.yml
+    ports:
+      - 4040:4040
+    depends_on:
+      - st-nginx
+    networks:
+      - saas-template
+  
+  st-permitio:
+    container_name: st-permitio
+    image: permitio/pdp-v2:latest
+    restart: always
+    env_file:
+      - ./.env
+    ports:
+      - 7766:7000
+    networks:
+      - saas-template
+  
+  # endregion
+

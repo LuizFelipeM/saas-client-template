@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { Prisma, prisma } from "@/lib/prisma";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -17,6 +17,30 @@ type StripeSubscription = Stripe.Subscription & {
 type StripeInvoice = Stripe.Invoice & {
   subscription: string;
 };
+
+// Helper function to create or update a plan
+async function createOrUpdatePlan(product: Stripe.Product) {
+  const features = product.metadata?.features
+    ? JSON.parse(product.metadata.features)
+    : [];
+
+  delete product.metadata?.features;
+
+  const planData: Prisma.PlanCreateInput = {
+    name: product.name,
+    description: product.description ?? null,
+    stripeProductId: product.id,
+    metadata: product.metadata,
+    features,
+    isActive: true,
+  };
+
+  return prisma.plan.upsert({
+    where: { stripeProductId: product.id },
+    create: planData,
+    update: planData,
+  });
+}
 
 export async function POST(req: Request) {
   try {
@@ -40,6 +64,12 @@ export async function POST(req: Request) {
 
     // Handle different event types
     switch (event.type) {
+      case "product.created":
+      case "product.updated": {
+        await createOrUpdatePlan(event.data.object);
+        break;
+      }
+
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
 
@@ -76,6 +106,20 @@ export async function POST(req: Request) {
           );
         }
 
+        // Get the plan to copy its features
+        const plan = await prisma.plan.findUnique({
+          where: { id: planId },
+          select: { features: true },
+        });
+
+        if (!plan) {
+          console.error("Plan not found");
+          return NextResponse.json(
+            { error: "Plan not found" },
+            { status: 404 }
+          );
+        }
+
         await prisma.subscription.create({
           data: {
             companyId,
@@ -83,6 +127,7 @@ export async function POST(req: Request) {
             status: "TRIALING",
             stripeSubscriptionId: subscriptionId,
             currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+            features: plan.features as Prisma.InputJsonValue,
           },
         });
         break;
@@ -144,12 +189,27 @@ export async function POST(req: Request) {
           break;
         }
 
+        // Get the plan to copy its features
+        const plan = await prisma.plan.findUnique({
+          where: { id: planId },
+          select: { features: true },
+        });
+
+        if (!plan) {
+          console.error("Plan not found");
+          return NextResponse.json(
+            { error: "Plan not found" },
+            { status: 404 }
+          );
+        }
+
         await prisma.subscription.update({
           where: { stripeSubscriptionId: subscription.id },
           data: {
             planId,
             status: subscription.status.toUpperCase() as any,
             currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+            features: plan.features as Prisma.InputJsonValue,
           },
         });
         break;
