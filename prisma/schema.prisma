@@ -30,6 +30,12 @@ enum SubscriptionStatus {
   UNPAID
 }
 
+enum FeatureType {
+  DEFAULT
+  USAGE
+  METERED
+}
+
 // Main tables
 model Company {
   id          String    @id @default(uuid())
@@ -93,6 +99,24 @@ model Plan {
   @@map("plans")
 }
 
+model Addon {
+  id              String      @id @default(uuid())
+  name            String
+  description     String?
+  stripeProductId String      @unique
+  metadata        Json?
+  key             String
+  feature         Json
+  isActive        Boolean     @default(true)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  subscriptions   SubscriptionAddon[] @ignore
+
+  @@map("addons")
+}
+
 model Subscription {
   id                    String              @id @default(uuid())
   status                SubscriptionStatus
@@ -107,6 +131,25 @@ model Subscription {
   company               Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
   planId                String
   plan                  Plan                @relation(fields: [planId], references: [id], onDelete: Restrict)
+  addons                SubscriptionAddon[]
 
   @@map("subscriptions")
+}
+
+// New subscription addon model
+model SubscriptionAddon {
+  id              String      @id @default(uuid())
+  key             String
+  feature         Json
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relations
+  subscriptionId  String
+  subscription    Subscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  addonId         String
+  addon           Addon        @relation(fields: [addonId], references: [id], onDelete: Restrict)
+
+  @@unique([subscriptionId, addonId])
+  @@map("subscription_addons")
 }

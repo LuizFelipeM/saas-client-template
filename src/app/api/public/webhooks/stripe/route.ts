@@ -1,4 +1,7 @@
-import { Prisma, prisma } from "@/lib/prisma";
+import { AddonService } from "@/services/addon.service";
+import { FeatureService } from "@/services/feature/feature.service";
+import { PlanService } from "@/services/plan.service";
+import { SubscriptionService } from "@/services/subscription.service";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -10,37 +13,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 // Define custom types for Stripe responses
-type StripeSubscription = Stripe.Subscription & {
-  current_period_end: number;
-};
 
 type StripeInvoice = Stripe.Invoice & {
   subscription: string;
 };
-
-// Helper function to create or update a plan
-async function createOrUpdatePlan(product: Stripe.Product) {
-  const features = product.metadata?.features
-    ? JSON.parse(product.metadata.features)
-    : [];
-
-  delete product.metadata?.features;
-
-  const planData: Prisma.PlanCreateInput = {
-    name: product.name,
-    description: product.description ?? null,
-    stripeProductId: product.id,
-    metadata: product.metadata,
-    features,
-    isActive: true,
-  };
-
-  return prisma.plan.upsert({
-    where: { stripeProductId: product.id },
-    create: planData,
-    update: planData,
-  });
-}
 
 export async function POST(req: Request) {
   try {
@@ -62,170 +38,67 @@ export async function POST(req: Request) {
       webhookSecret
     );
 
-    // Handle different event types
-    switch (event.type) {
-      case "product.created":
-      case "product.updated": {
-        await createOrUpdatePlan(event.data.object);
-        break;
-      }
+    const planService = new PlanService();
+    const addonService = new AddonService(stripe);
+    const featureService = new FeatureService();
+    const subscriptionService = new SubscriptionService(
+      stripe,
+      planService,
+      addonService,
+      featureService
+    );
 
-      case "checkout.session.completed": {
-        const session = event.data.object as Stripe.Checkout.Session;
+    try {
+      switch (event.type) {
+        case "product.created":
+        case "product.updated": {
+          const product = event.data.object;
 
-        if (!session.metadata) {
-          console.error("Missing metadata in checkout session");
-          return NextResponse.json(
-            { error: "Missing metadata in checkout session" },
-            { status: 400 }
-          );
-        }
+          if (!product.metadata?.type) {
+            throw new Error("Product missing metadata.type");
+          }
 
-        const planId = session.metadata.planId;
-        const companyId = session.metadata.companyId;
+          if (product.metadata.type === "plan") {
+            await planService.createOrUpdate(product);
+          } else {
+            await addonService.createOrUpdate(product);
+          }
 
-        if (!planId || !companyId) {
-          console.error("Missing planId or companyId in session metadata");
-          return NextResponse.json(
-            { error: "Missing planId or companyId in session metadata" },
-            { status: 400 }
-          );
-        }
-
-        // Get subscription details
-        const subscriptionId = session.subscription as string;
-        const subscription = (await stripe.subscriptions.retrieve(
-          subscriptionId
-        )) as unknown as StripeSubscription;
-
-        if (!subscription) {
-          console.error("Failed to retrieve subscription");
-          return NextResponse.json(
-            { error: "Failed to retrieve subscription" },
-            { status: 400 }
-          );
-        }
-
-        // Get the plan to copy its features
-        const plan = await prisma.plan.findUnique({
-          where: { id: planId },
-          select: { features: true },
-        });
-
-        if (!plan) {
-          console.error("Plan not found");
-          return NextResponse.json(
-            { error: "Plan not found" },
-            { status: 404 }
-          );
-        }
-
-        await prisma.subscription.create({
-          data: {
-            companyId,
-            planId,
-            status: "TRIALING",
-            stripeSubscriptionId: subscriptionId,
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-            features: plan.features as Prisma.InputJsonValue,
-          },
-        });
-        break;
-      }
-
-      case "invoice.paid": {
-        const invoice = event.data.object as StripeInvoice;
-
-        // Get the subscription ID from the invoice's subscription property
-        const subscriptionId = invoice.subscription;
-
-        if (!subscriptionId) {
-          console.error("No subscription ID found in invoice");
-          return NextResponse.json(
-            { error: "No subscription ID found in invoice" },
-            { status: 400 }
-          );
-        }
-
-        // Get the subscription to get the current period end
-        const subscription = (await stripe.subscriptions.retrieve(
-          subscriptionId
-        )) as unknown as StripeSubscription;
-
-        if (!subscription) {
-          console.error("Failed to retrieve subscription");
-          return NextResponse.json(
-            { error: "Failed to retrieve subscription" },
-            { status: 400 }
-          );
-        }
-
-        await prisma.subscription.update({
-          where: { stripeSubscriptionId: subscriptionId },
-          data: {
-            status: "ACTIVE",
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-          },
-        });
-        break;
-      }
-
-      case "customer.subscription.updated": {
-        const subscription = event.data.object as StripeSubscription;
-
-        if (!subscription.metadata) {
-          console.error("Missing metadata in subscription");
-          return NextResponse.json(
-            { error: "Missing metadata in subscription" },
-            { status: 400 }
-          );
-        }
-
-        const planId = subscription.metadata.planId;
-        const companyId = subscription.metadata.companyId;
-
-        if (!planId || !companyId) {
-          console.error("Missing planId or companyId in subscription metadata");
           break;
         }
 
-        // Get the plan to copy its features
-        const plan = await prisma.plan.findUnique({
-          where: { id: planId },
-          select: { features: true },
-        });
-
-        if (!plan) {
-          console.error("Plan not found");
-          return NextResponse.json(
-            { error: "Plan not found" },
-            { status: 404 }
-          );
+        case "checkout.session.completed": {
+          const session = event.data.object;
+          await subscriptionService.completeSession(session);
+          break;
         }
 
-        await prisma.subscription.update({
-          where: { stripeSubscriptionId: subscription.id },
-          data: {
-            planId,
-            status: subscription.status.toUpperCase() as any,
-            currentPeriodEnd: new Date(subscription.current_period_end * 1000),
-            features: plan.features as Prisma.InputJsonValue,
-          },
-        });
-        break;
+        case "invoice.paid": {
+          const invoice = event.data.object as StripeInvoice;
+          const subscriptionId = invoice.subscription;
+          await subscriptionService.invoicePaid(subscriptionId);
+          break;
+        }
+
+        case "customer.subscription.updated": {
+          const subscription = event.data.object;
+          await subscriptionService.subscriptionUpdated(subscription);
+          break;
+        }
+
+        case "customer.subscription.deleted": {
+          const subscription = event.data.object;
+          await subscriptionService.subscriptionDeleted(subscription);
+          break;
+        }
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error(error);
+        return NextResponse.json({ error: error.message }, { status: 400 });
       }
 
-      case "customer.subscription.deleted": {
-        const subscription = event.data.object as Stripe.Subscription;
-
-        await prisma.subscription.update({
-          where: { stripeSubscriptionId: subscription.id },
-          data: {
-            status: "CANCELED",
-          },
-        });
-        break;
-      }
+      throw error;
     }
 
     return NextResponse.json({ received: true });
