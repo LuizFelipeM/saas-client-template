@@ -1,19 +1,19 @@
 # Basic product test
 stripe products create \
-  --name="Basic test product" \
+  --name="Basic test product 0003" \
   --description="Basic Test Product Description" \
   -d "metadata[features]={ \"maxDocuments\": { \"type\": \"METERED\", \"metadata\": { \"max\": 5000 } }, \"teamLimit\": { \"type\": \"METERED\", \"metadata\": { \"max\": 1 } } }" \
   -d "metadata[type]=plan"
 
 # Create a price for the product (replace {product_id} with the ID from above)
 stripe prices create \
-  --product=prod_SFuau9evJ3zB7T \
+  --product=prod_SGGWMNBqWfWp8Q \
   --unit-amount=1000 \
   --currency=usd \
   -d "recurring[interval]=month"
 
 stripe prices create \
-  --product=prod_SFuau9evJ3zB7T \
+  --product=prod_SGGWMNBqWfWp8Q \
   --unit-amount=9600 \
   --currency=usd \
   -d "recurring[interval]=year"

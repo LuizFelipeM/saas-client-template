@@ -1,11 +1,12 @@
 import { prisma, Prisma } from "@/lib/prisma";
 import { Feature } from "@/types/feature";
+import { Price } from "@/types/price";
 import Stripe from "stripe";
 
 export class PlanService {
   constructor() {}
 
-  async createOrUpdate(product: Stripe.Product) {
+  async createOrUpdate(product: Stripe.Product, prices: Price[]) {
     const { features: featuresString, ...metadata } =
       product.metadata as Stripe.Metadata & {
         features: string; // JSON string
@@ -29,6 +30,7 @@ export class PlanService {
       stripeProductId: product.id,
       metadata,
       features: features as any,
+      prices: prices as any,
       isActive: true,
     };
 
@@ -36,6 +38,15 @@ export class PlanService {
       where: { stripeProductId: product.id },
       create: planData,
       update: planData,
+    });
+  }
+
+  async updatePrices(stripeProductId: string, prices: Price[]) {
+    return prisma.plan.update({
+      where: { stripeProductId },
+      data: {
+        prices: prices as any,
+      },
     });
   }
 
@@ -51,5 +62,13 @@ export class PlanService {
     return prisma.plan.findUnique({
       where: { id: planId },
     });
+  }
+
+  async planExists(stripeProductId: string) {
+    const plan = await prisma.plan.findUnique({
+      where: { stripeProductId },
+      select: { id: true },
+    });
+    return !!plan;
   }
 }

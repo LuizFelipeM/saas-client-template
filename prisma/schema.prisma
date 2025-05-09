@@ -89,6 +89,7 @@ model Plan {
   stripeProductId String      @unique
   metadata        Json?
   features        Json
+  prices          Json?
   isActive        Boolean     @default(true)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
@@ -107,6 +108,7 @@ model Addon {
   metadata        Json?
   key             String
   feature         Json
+  prices          Json?
   isActive        Boolean     @default(true)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt

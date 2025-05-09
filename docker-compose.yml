@@ -1,6 +1,6 @@
 name: saas-template
 
-volumes:
+# volumes:
   # region Cloud services
   # pgdata:
   # rabbitmqdata:
@@ -74,8 +74,6 @@ services:
       - ./ngrok.yml:/etc/ngrok.yml
     ports:
       - 4040:4040
-    depends_on:
-      - st-nginx
     networks:
       - saas-template
   

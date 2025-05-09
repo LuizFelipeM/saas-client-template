@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { PlanService } from "@/services/plan.service";
+import { AddonService } from "@/services/addon.service";
 import { Price } from "@/types/price";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -10,25 +10,26 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 export async function GET() {
   try {
-    const plans = await prisma.plan.findMany({
+    const addons = await prisma.addon.findMany({
       where: { isActive: true },
       orderBy: { createdAt: "asc" },
       select: {
         id: true,
         name: true,
-        description: true, // Include description
+        description: true,
         metadata: true,
-        features: true,
+        key: true,
+        feature: true,
         stripeProductId: true,
-        prices: true, // Include the prices field from the Plan model
+        prices: true,
       },
     });
 
-    return NextResponse.json(plans);
+    return NextResponse.json(addons);
   } catch (error) {
-    console.error("Error fetching plans:", error);
+    console.error("Error fetching addons:", error);
     return NextResponse.json(
-      { error: "Failed to fetch plans" },
+      { error: "Failed to fetch addons" },
       { status: 500 }
     );
   }
@@ -49,9 +50,9 @@ export async function POST(req: Request) {
     // Fetch the product and prices from Stripe
     const product = await stripe.products.retrieve(stripeProductId);
 
-    if (!product.metadata?.type || product.metadata.type !== "plan") {
+    if (!product.metadata?.type || product.metadata.type !== "addon") {
       return NextResponse.json(
-        { error: "Product is not a plan, missing metadata.type" },
+        { error: "Product is not an addon, missing metadata.type" },
         { status: 400 }
       );
     }
@@ -71,14 +72,14 @@ export async function POST(req: Request) {
       metadata: price.metadata,
     }));
 
-    const planService = new PlanService();
-    const plan = await planService.createOrUpdate(product, formattedPrices);
+    const addonService = new AddonService();
+    const addon = await addonService.createOrUpdate(product, formattedPrices);
 
-    return NextResponse.json(plan);
+    return NextResponse.json(addon);
   } catch (error) {
-    console.error("Error creating/updating plan:", error);
+    console.error("Error creating/updating addon:", error);
     return NextResponse.json(
-      { error: "Failed to create or update plan" },
+      { error: "Failed to create or update addon" },
       { status: 500 }
     );
   }

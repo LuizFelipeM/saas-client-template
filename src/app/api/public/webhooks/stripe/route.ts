@@ -10,10 +10,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-03-31.basil",
 });
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
-
-// Define custom types for Stripe responses
-
 type StripeInvoice = Stripe.Invoice & {
   subscription: string;
 };
@@ -35,11 +31,11 @@ export async function POST(req: Request) {
     const event = stripe.webhooks.constructEvent(
       body,
       signature,
-      webhookSecret
+      process.env.STRIPE_WEBHOOK_SECRET!
     );
 
     const planService = new PlanService();
-    const addonService = new AddonService(stripe);
+    const addonService = new AddonService();
     const featureService = new FeatureService();
     const subscriptionService = new SubscriptionService(
       stripe,
@@ -50,23 +46,6 @@ export async function POST(req: Request) {
 
     try {
       switch (event.type) {
-        case "product.created":
-        case "product.updated": {
-          const product = event.data.object;
-
-          if (!product.metadata?.type) {
-            throw new Error("Product missing metadata.type");
-          }
-
-          if (product.metadata.type === "plan") {
-            await planService.createOrUpdate(product);
-          } else {
-            await addonService.createOrUpdate(product);
-          }
-
-          break;
-        }
-
         case "checkout.session.completed": {
           const session = event.data.object;
           await subscriptionService.completeSession(session);
