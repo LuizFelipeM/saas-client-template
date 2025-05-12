@@ -1,7 +1,9 @@
 import { Addon, Plan } from "@/lib/prisma";
 import { hasDuplicates } from "@/lib/utils";
 import { Feature } from "@/types/feature";
+import { injectable } from "inversify";
 
+@injectable()
 export class FeatureService {
   constructor() {}
 

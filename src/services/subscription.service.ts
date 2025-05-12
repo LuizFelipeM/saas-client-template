@@ -1,4 +1,6 @@
+import { DIContainerSymbols } from "@/lib/di.container.types";
 import { prisma, SubscriptionStatus } from "@/lib/prisma";
+import { inject, injectable } from "inversify";
 import Stripe from "stripe";
 import { AddonService } from "./addon.service";
 import { FeatureService } from "./feature/feature.service";
@@ -8,11 +10,16 @@ type StripeSubscription = Stripe.Subscription & {
   current_period_end: number;
 };
 
+@injectable()
 export class SubscriptionService {
   constructor(
+    @inject(DIContainerSymbols.Stripe)
     private readonly stripe: Stripe,
+    @inject(DIContainerSymbols.PlanService)
     private readonly planService: PlanService,
+    @inject(DIContainerSymbols.AddonService)
     private readonly addonService: AddonService,
+    @inject(DIContainerSymbols.FeatureService)
     private readonly featureService: FeatureService
   ) {}
 

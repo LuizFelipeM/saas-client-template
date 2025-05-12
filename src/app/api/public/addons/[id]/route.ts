@@ -1,12 +1,10 @@
+import { DIContainer } from "@/lib/di.container";
+import { DITypes } from "@/lib/di.container.types";
 import { prisma } from "@/lib/prisma";
 import { AddonService } from "@/services/addon.service";
 import { Price } from "@/types/price";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-03-31.basil",
-});
 
 export async function PATCH(
   req: Request,
@@ -22,6 +20,8 @@ export async function PATCH(
     if (!addon) {
       return NextResponse.json({ error: "Addon not found" }, { status: 404 });
     }
+
+    const stripe = DIContainer.getInstance<Stripe>(DITypes.Stripe);
 
     // Fetch all active prices for the product
     const pricesList = await stripe.prices.list({
@@ -39,7 +39,9 @@ export async function PATCH(
       metadata: price.metadata,
     }));
 
-    const addonService = new AddonService();
+    const addonService = DIContainer.getInstance<AddonService>(
+      DITypes.AddonService
+    );
     const updatedAddon = await addonService.updatePrices(id, formattedPrices);
 
     return NextResponse.json(updatedAddon);

@@ -1,12 +1,10 @@
+import { DIContainer } from "@/lib/di.container";
+import { DITypes } from "@/lib/di.container.types";
 import { AddonService } from "@/services/addon.service";
 import { PlanService } from "@/services/plan.service";
 import { Price } from "@/types/price";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-03-31.basil",
-});
 
 export async function DELETE(
   req: Request,
@@ -15,6 +13,8 @@ export async function DELETE(
   const { id: priceId } = params;
 
   try {
+    const stripe = DIContainer.getInstance<Stripe>(DITypes.Stripe);
+
     // Get the price information from Stripe
     const price = await stripe.prices.retrieve(priceId);
 
@@ -27,8 +27,12 @@ export async function DELETE(
 
     const productId = price.product;
 
-    const planService = new PlanService();
-    const addonService = new AddonService();
+    const planService = DIContainer.getInstance<PlanService>(
+      DITypes.PlanService
+    );
+    const addonService = DIContainer.getInstance<AddonService>(
+      DITypes.AddonService
+    );
 
     const isPlan = await planService.planExists(productId);
     const isAddon = await addonService.addonExists(productId);

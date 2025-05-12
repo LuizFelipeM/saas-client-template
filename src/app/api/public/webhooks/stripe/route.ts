@@ -1,14 +1,9 @@
-import { AddonService } from "@/services/addon.service";
-import { FeatureService } from "@/services/feature/feature.service";
-import { PlanService } from "@/services/plan.service";
+import { DIContainer } from "@/lib/di.container";
+import { DITypes } from "@/lib/di.container.types";
 import { SubscriptionService } from "@/services/subscription.service";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-03-31.basil",
-});
 
 type StripeInvoice = Stripe.Invoice & {
   subscription: string;
@@ -27,6 +22,8 @@ export async function POST(req: Request) {
       );
     }
 
+    const stripe = DIContainer.getInstance<Stripe>(DITypes.Stripe);
+
     // Verify webhook signature
     const event = stripe.webhooks.constructEvent(
       body,
@@ -34,14 +31,8 @@ export async function POST(req: Request) {
       process.env.STRIPE_WEBHOOK_SECRET!
     );
 
-    const planService = new PlanService();
-    const addonService = new AddonService();
-    const featureService = new FeatureService();
-    const subscriptionService = new SubscriptionService(
-      stripe,
-      planService,
-      addonService,
-      featureService
+    const subscriptionService = DIContainer.getInstance<SubscriptionService>(
+      DITypes.SubscriptionService
     );
 
     try {

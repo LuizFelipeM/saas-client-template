@@ -1,12 +1,10 @@
+import { DIContainer } from "@/lib/di.container";
+import { DITypes } from "@/lib/di.container.types";
 import { prisma } from "@/lib/prisma";
 import { AddonService } from "@/services/addon.service";
 import { Price } from "@/types/price";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-03-31.basil",
-});
 
 export async function GET() {
   try {
@@ -47,6 +45,8 @@ export async function POST(req: Request) {
       );
     }
 
+    const stripe = DIContainer.getInstance<Stripe>(DITypes.Stripe);
+
     // Fetch the product and prices from Stripe
     const product = await stripe.products.retrieve(stripeProductId);
 
@@ -72,7 +72,9 @@ export async function POST(req: Request) {
       metadata: price.metadata,
     }));
 
-    const addonService = new AddonService();
+    const addonService = DIContainer.getInstance<AddonService>(
+      DITypes.AddonService
+    );
     const addon = await addonService.createOrUpdate(product, formattedPrices);
 
     return NextResponse.json(addon);

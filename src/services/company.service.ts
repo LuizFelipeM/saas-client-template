@@ -84,9 +84,9 @@ export async function getCompanySubscription(companyId: string) {
               in: ["ACTIVE", "TRIALING"],
             },
           },
-          include: {
-            plan: true,
-          },
+          // include: {
+          // plan: true,
+          // },
           orderBy: {
             createdAt: "desc",
           },
@@ -106,11 +106,10 @@ export async function getCompanySubscription(companyId: string) {
     }
 
     return {
-      plan: currentSubscription.plan,
+      plan: currentSubscription.planId,
       status: currentSubscription.status,
       currentPeriodEnd: currentSubscription.currentPeriodEnd,
-      billingCycle: currentSubscription.plan.billingCycle,
-      metadata: currentSubscription.plan.metadata,
+      // metadata: currentSubscription.plan.metadata,
     };
   } catch (error) {
     console.error("Error fetching company subscription:", error);

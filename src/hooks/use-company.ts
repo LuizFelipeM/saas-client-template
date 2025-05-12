@@ -2,7 +2,7 @@ import {
   getCompanySubscription,
   getCompanyUsers,
   getUserCompanies,
-} from "@/lib/services/company";
+} from "@/services/company.service";
 import { useQuery } from "@tanstack/react-query";
 
 export function useUserCompanies(clerkUserId: string) {

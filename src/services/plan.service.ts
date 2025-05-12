@@ -1,8 +1,10 @@
 import { prisma, Prisma } from "@/lib/prisma";
 import { Feature } from "@/types/feature";
 import { Price } from "@/types/price";
+import { injectable } from "inversify";
 import Stripe from "stripe";
 
+@injectable()
 export class PlanService {
   constructor() {}
 
