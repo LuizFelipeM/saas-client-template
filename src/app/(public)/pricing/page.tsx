@@ -11,7 +11,8 @@ import {
 import { Toggle } from "@/components/ui/toggle";
 import { Feature } from "@/types/feature";
 import { Price } from "@/types/price";
-import { Check } from "lucide-react";
+import { useAuth, useClerk, useUser } from "@clerk/nextjs";
+import { Check, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -27,6 +28,11 @@ type Plan = {
 
 export default function PricingPage() {
   const router = useRouter();
+
+  const { getToken } = useAuth();
+  const { user, isSignedIn, isLoaded } = useUser();
+  const { redirectToSignIn } = useClerk();
+
   const [plans, setPlans] = useState<Plan[]>([]);
   const [isLoading, setIsLoading] = useState(true); // Single loading state
   const [isYearly, setIsYearly] = useState(false);
@@ -74,15 +80,7 @@ export default function PricingPage() {
   // Helper function to get the price amount
   const getPriceAmount = (plan: Plan): number | string => {
     const priceObject = findPriceForInterval(plan.prices, isYearly);
-    if (!priceObject?.unit_amount) {
-      // Fallback: if desired interval not found, try the other
-      const fallbackPriceObject = findPriceForInterval(plan.prices, !isYearly);
-      if (fallbackPriceObject?.unit_amount) {
-        // Consider indicating that the displayed price is for a different interval
-        return fallbackPriceObject.unit_amount / 100;
-      }
-      return "N/A";
-    }
+    if (!priceObject?.unit_amount) return "N/A";
     return priceObject.unit_amount / 100;
   };
 
@@ -107,6 +105,13 @@ export default function PricingPage() {
   };
 
   const handleCheckout = async (plan: Plan) => {
+    if (!isLoaded) return;
+
+    if (!isSignedIn) {
+      redirectToSignIn({ redirectUrl: window.location.href });
+      return;
+    }
+
     const priceId = getStripePriceId(plan);
     if (!priceId) {
       console.error(
@@ -120,13 +125,22 @@ export default function PricingPage() {
     }
 
     try {
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+
+      const token = await getToken();
+      if (token) {
+        headers.Authorization = `Bearer ${token}`;
+      }
+
       const response = await fetch("/api/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
+          planId: plan.id,
           priceId,
-          isYearly,
-          companyId: "current-company-id", // Replace with actual companyId
+          organizationId: user.organizationMemberships[0].organization.id,
         }),
       });
 
@@ -243,9 +257,15 @@ export default function PricingPage() {
               <Button
                 className="w-full"
                 onClick={() => handleCheckout(plan)}
-                disabled={!getStripePriceId(plan)}
+                disabled={!getStripePriceId(plan) || !isLoaded}
               >
-                {getStripePriceId(plan) ? "Select Plan" : "Unavailable"}
+                {!isLoaded ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : getStripePriceId(plan) ? (
+                  "Select Plan"
+                ) : (
+                  "Unavailable"
+                )}
               </Button>
             </CardFooter>
           </Card>

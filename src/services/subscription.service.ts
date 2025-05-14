@@ -1,4 +1,4 @@
-import { DIContainerSymbols } from "@/lib/di.container.types";
+import { DITypes } from "@/lib/di.container.types";
 import { prisma, SubscriptionStatus } from "@/lib/prisma";
 import { inject, injectable } from "inversify";
 import Stripe from "stripe";
@@ -13,13 +13,13 @@ type StripeSubscription = Stripe.Subscription & {
 @injectable()
 export class SubscriptionService {
   constructor(
-    @inject(DIContainerSymbols.Stripe)
+    @inject(DITypes.Stripe)
     private readonly stripe: Stripe,
-    @inject(DIContainerSymbols.PlanService)
+    @inject(DITypes.PlanService)
     private readonly planService: PlanService,
-    @inject(DIContainerSymbols.AddonService)
+    @inject(DITypes.AddonService)
     private readonly addonService: AddonService,
-    @inject(DIContainerSymbols.FeatureService)
+    @inject(DITypes.FeatureService)
     private readonly featureService: FeatureService
   ) {}
 
@@ -30,10 +30,10 @@ export class SubscriptionService {
 
     const planId: string = session.metadata.planId;
     const addonIds: string[] = JSON.parse(session.metadata.addonIds);
-    const companyId: string = session.metadata.companyId;
+    const organizationId: string = session.metadata.organizationId;
 
-    if (!planId || !companyId) {
-      throw new Error("Missing planId or companyId in session metadata");
+    if (!planId || !organizationId) {
+      throw new Error("Missing planId or organizationId in session metadata");
     }
 
     // Get subscription details
@@ -63,7 +63,7 @@ export class SubscriptionService {
 
     await prisma.subscription.create({
       data: {
-        companyId,
+        organizationId,
         planId,
         status: "TRIALING",
         stripeSubscriptionId: subscriptionId,

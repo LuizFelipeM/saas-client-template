@@ -3,18 +3,17 @@ import { DITypes } from "@/lib/di.container.types";
 import { prisma } from "@/lib/prisma";
 import { Price } from "@/types/price";
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
 
 export async function POST(req: Request) {
   try {
     // TODO: Add validation
     // TODO: Add logging
     // TODO: Add addon management
-    const { planId, priceId, addonIds, companyId } = await req.json();
+    const { planId, priceId, addonIds, organizationId } = await req.json();
 
-    if (!planId || !companyId) {
+    if (!planId || !organizationId) {
       return NextResponse.json(
-        { error: "Missing planId or companyId" },
+        { error: "Missing planId or organizationId" },
         { status: 400 }
       );
     }
@@ -24,7 +23,6 @@ export async function POST(req: Request) {
       where: {
         id: planId,
         isActive: true,
-        prices: { array_contains: { id: priceId } },
       },
     });
 
@@ -32,25 +30,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Plan not found" }, { status: 404 });
     }
 
-    if (
-      !plan.prices ||
-      !Array.isArray(plan.prices) ||
-      plan.prices.length === 0
-    ) {
+    if (!Array.isArray(plan.prices) || plan.prices.length === 0) {
       return NextResponse.json(
         { error: "Plan has no prices" },
         { status: 400 }
       );
     }
 
-    const stripe = DIContainer.getInstance<Stripe>(DITypes.Stripe);
+    const price = plan.prices?.find((p) => (p as Price).id === priceId);
+    if (!price) {
+      return NextResponse.json({ error: "Price not found" }, { status: 404 });
+    }
+
+    const stripe = DIContainer.getInstance(DITypes.Stripe);
 
     // Create a Stripe checkout session
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       line_items: [
         {
-          price: (plan.prices[0] as Price).id,
+          price: (price as Price).id,
           quantity: 1,
         },
       ],
@@ -59,12 +58,12 @@ export async function POST(req: Request) {
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
       metadata: {
         planId,
-        companyId,
+        organizationId,
       },
       subscription_data: {
         metadata: {
           planId,
-          companyId,
+          organizationId,
         },
       },
     });

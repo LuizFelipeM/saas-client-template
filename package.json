@@ -18,6 +18,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
+    "@clerk/backend": "^1.32.1",
     "@clerk/nextjs": "^6.11.0",
     "@hookform/resolvers": "^4.1.0",
     "@prisma/client": "6.7.0",
@@ -46,6 +47,7 @@
     "react-hook-form": "^7.54.2",
     "reflect-metadata": "^0.2.2",
     "stripe": "^18.0.0",
+    "svix": "^1.65.0",
     "tailwind-merge": "^3.0.1",
     "tailwindcss-animate": "^1.0.7",
     "tsx": "^4.19.4",

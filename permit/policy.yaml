@@ -2,14 +2,14 @@ version: 1
 
 # Define resources
 resources:
-  company:
+  organization:
     type: tenant
     actions:
       - view_dashboard
       - edit_content
       - manage_billing
       - invite_user
-      - delete_company
+      - delete_organization
       - view_analytics
       - manage_users
     attributes:
@@ -21,76 +21,76 @@ roles:
   owner:
     permissions:
       - action: view_dashboard
-        resource: company
+        resource: organization
       - action: edit_content
-        resource: company
+        resource: organization
       - action: manage_billing
-        resource: company
+        resource: organization
       - action: invite_user
-        resource: company
-      - action: delete_company
-        resource: company
+        resource: organization
+      - action: delete_organization
+        resource: organization
       - action: view_analytics
-        resource: company
+        resource: organization
       - action: manage_users
-        resource: company
+        resource: organization
 
   admin:
     permissions:
       - action: view_dashboard
-        resource: company
+        resource: organization
       - action: edit_content
-        resource: company
+        resource: organization
       - action: view_billing
-        resource: company
+        resource: organization
       - action: invite_user
-        resource: company
+        resource: organization
       - action: view_analytics
-        resource: company
+        resource: organization
       - action: manage_users
-        resource: company
+        resource: organization
 
   editor:
     permissions:
       - action: view_dashboard
-        resource: company
+        resource: organization
       - action: edit_content
-        resource: company
+        resource: organization
       - action: view_analytics
-        resource: company
+        resource: organization
 
   viewer:
     permissions:
       - action: view_dashboard
-        resource: company
+        resource: organization
       - action: view_analytics
-        resource: company
+        resource: organization
 
 # Define role assignments
 role_assignments:
   - role: owner
-    resource: company
+    resource: organization
     conditions:
       - attribute: role
         operator: equals
         value: owner
 
   - role: admin
-    resource: company
+    resource: organization
     conditions:
       - attribute: role
         operator: equals
         value: admin
 
   - role: editor
-    resource: company
+    resource: organization
     conditions:
       - attribute: role
         operator: equals
         value: editor
 
   - role: viewer
-    resource: company
+    resource: organization
     conditions:
       - attribute: role
         operator: equals

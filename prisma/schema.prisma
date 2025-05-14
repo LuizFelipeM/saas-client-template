@@ -37,49 +37,48 @@ enum FeatureType {
 }
 
 // Main tables
-model Company {
+model Organization {
   id          String    @id @default(uuid())
+  clerkId     String    @unique
   name        String
   slug        String    @unique
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   // Relations
-  users       CompanyUser[]
+  users       OrganizationUser[]
   subscriptions Subscription[]
 
-  @@map("companies")
+  @@map("organizations")
 }
 
 model User {
   id            String    @id @default(uuid())
-  clerkUserId   String    @unique
+  clerkId       String    @unique
   email         String    @unique
-  firstName     String?
-  lastName      String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
   // Relations
-  companies     CompanyUser[]
+  organizations     OrganizationUser[]
 
   @@map("users")
 }
 
-model CompanyUser {
+model OrganizationUser {
   id        String    @id @default(uuid())
   role      UserRole
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
   // Relations
-  companyId String
-  company   Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  organizationId String
+  organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([companyId, userId])
-  @@map("company_users")
+  @@unique([organizationId, userId])
+  @@map("organization_users")
 }
 
 model Plan {
@@ -129,8 +128,8 @@ model Subscription {
   updatedAt             DateTime            @updatedAt
 
   // Relations
-  companyId             String
-  company               Company             @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  organizationId        String
+  organization          Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   planId                String
   plan                  Plan                @relation(fields: [planId], references: [id], onDelete: Restrict)
   addons                SubscriptionAddon[]
