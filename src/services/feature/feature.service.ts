@@ -56,7 +56,8 @@ export class FeatureService {
       );
     }
 
-    const planFeatures: Record<string, Feature> = plan.features as any;
+    const planFeatures: Record<string, Feature> =
+      plan.features as unknown as Record<string, Feature>;
     const addonFeatures: Record<string, Feature> = addons?.reduce(
       (acc, { key, feature }) => ({
         ...acc,

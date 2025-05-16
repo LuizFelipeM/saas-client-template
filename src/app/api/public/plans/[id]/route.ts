@@ -4,13 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { PlanService } from "@/services/plan.service";
 import { Price } from "@/types/price";
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   try {
     // Get the plan by stripe product ID
     const plan = await prisma.plan.findUnique({
@@ -21,7 +20,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Plan not found" }, { status: 404 });
     }
 
-    const stripe = DIContainer.getInstance<Stripe>(DITypes.Stripe);
+    const stripe = DIContainer.getInstance(DITypes.Stripe);
 
     // Fetch all active prices for the product
     const pricesList = await stripe.prices.list({
@@ -54,9 +53,9 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   try {
     // Deactivate the plan instead of deleting it
     await prisma.plan.update({

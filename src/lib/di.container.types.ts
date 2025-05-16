@@ -4,12 +4,10 @@ import { OrganizationService } from "@/services/organization.service";
 import { PlanService } from "@/services/plan.service";
 import { SubscriptionService } from "@/services/subscription.service";
 import { UserService } from "@/services/user.service";
-import { ClerkClient } from "@clerk/backend";
 import { Stripe } from "stripe";
 import { PrismaClient } from "./prisma";
 
 export const DITypes = {
-  Clerk: "Clerk",
   Prisma: "Prisma",
   Stripe: "Stripe",
   AddonService: "AddonService",
@@ -23,7 +21,6 @@ export const DITypes = {
 } as const;
 
 export type ServiceTypes = {
-  [DITypes.Clerk]: ClerkClient;
   [DITypes.Prisma]: PrismaClient;
   [DITypes.Stripe]: Stripe;
   [DITypes.AddonService]: AddonService;

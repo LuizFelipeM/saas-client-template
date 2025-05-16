@@ -1,14 +1,16 @@
 "use client";
 
-import { FormField } from "@/types/form-field";
+import { FormField as FormFieldType } from "@/types/form-field";
+import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
+import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "../ui/button";
-import { Form } from "../ui/form";
+import { Form, FormField } from "../ui/form";
 import { DynamicFormField } from "./dynamic-form-field";
 
 interface DynamicFormProps {
-  fields: FormField[];
+  fields: FormFieldType[];
   clearOnSubmit?: boolean;
   onSubmit?: (
     event: React.FormEvent,
@@ -25,7 +27,7 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
     Record<string, string | number>
   >({});
 
-  const createFormSchema = (fields: FormField[]) => {
+  const createFormSchema = (fields: FormFieldType[]) => {
     const schemaFields: Record<string, z.ZodTypeAny> = {};
     fields.forEach((field) => {
       switch (field.type) {
@@ -46,11 +48,11 @@ export const DynamicForm: React.FC<DynamicFormProps> = ({
     return z.object(schemaFields);
   };
 
-  const formSchema = createFormSchema(formFields);
+  const formSchema = createFormSchema(fields);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: formFields.reduce((acc, field) => {
+    defaultValues: fields.reduce((acc, field) => {
       acc[field.title] = field.type === "rating" ? 0 : "";
       return acc;
     }, {} as Record<string, string | number>),

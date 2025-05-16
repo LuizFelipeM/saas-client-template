@@ -1,6 +1,5 @@
 import { DIContainer } from "@/lib/di.container";
 import { DITypes } from "@/lib/di.container.types";
-import { SubscriptionService } from "@/services/subscription.service";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
@@ -22,7 +21,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const stripe = DIContainer.getInstance<Stripe>(DITypes.Stripe);
+    const stripe = DIContainer.getInstance(DITypes.Stripe);
 
     // Verify webhook signature
     const event = stripe.webhooks.constructEvent(
@@ -31,7 +30,7 @@ export async function POST(req: Request) {
       process.env.STRIPE_WEBHOOK_SECRET!
     );
 
-    const subscriptionService = DIContainer.getInstance<SubscriptionService>(
+    const subscriptionService = DIContainer.getInstance(
       DITypes.SubscriptionService
     );
 

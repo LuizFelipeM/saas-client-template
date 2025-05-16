@@ -5,8 +5,8 @@ agent:
   log: stdout
 
 endpoints:
-  - name: nginx
+  - name: nextjs
     description: Next.js tunnel
     url: lenient-really-badger.ngrok-free.app
     upstream:
-      url: localhost:3000
+      url: st-app:3000

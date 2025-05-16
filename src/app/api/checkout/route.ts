@@ -9,7 +9,7 @@ export async function POST(req: Request) {
     // TODO: Add validation
     // TODO: Add logging
     // TODO: Add addon management
-    const { planId, priceId, addonIds, organizationId } = await req.json();
+    const { planId, priceId, organizationId } = await req.json();
 
     if (!planId || !organizationId) {
       return NextResponse.json(

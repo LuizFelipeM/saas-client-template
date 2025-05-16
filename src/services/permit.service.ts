@@ -1,3 +1,5 @@
+import { DIContainer } from "@/lib/di.container";
+import { DITypes } from "@/lib/di.container.types";
 import { prisma, UserRole } from "@/lib/prisma";
 import { Permit } from "permitio";
 
@@ -8,30 +10,34 @@ const permit = new Permit({
 
 export async function syncUserRolesToPermit() {
   try {
+    const prisma = DIContainer.getInstance(DITypes.Prisma);
+
     // Fetch all company users with their roles
-    const companyUsers = await prisma.companyUser.findMany({
+    const organizationUsers = await prisma.organizationUser.findMany({
       include: {
-        user: true,
-        company: true,
+        user: {
+          select: {
+            clerkId: true,
+            email: true,
+          },
+        },
       },
     });
 
     // Sync each user's roles to Permit
-    for (const companyUser of companyUsers) {
+    for (const companyUser of organizationUsers) {
       await permit.api.syncUser({
-        key: companyUser.user.clerkUserId,
+        key: companyUser.user.clerkId,
         attributes: {
           email: companyUser.user.email,
-          firstName: companyUser.user.firstName,
-          lastName: companyUser.user.lastName,
         },
       });
 
       // Assign the user to the company with their role
       await permit.api.assignRole({
-        user: companyUser.user.clerkUserId,
+        user: companyUser.user.clerkId,
         role: companyUser.role.toLowerCase(),
-        tenant: companyUser.company.id,
+        tenant: companyUser.organizationId,
       });
     }
   } catch (error) {
@@ -41,14 +47,14 @@ export async function syncUserRolesToPermit() {
 }
 
 export async function syncSingleUserRole(
-  clerkUserId: string,
-  companyId: string,
+  clerkId: string,
+  organizationId: string,
   role: UserRole
 ) {
   try {
     // Sync user to Permit
     const user = await prisma.user.findUnique({
-      where: { clerkUserId },
+      where: { clerkId },
     });
 
     if (!user) {
@@ -56,19 +62,17 @@ export async function syncSingleUserRole(
     }
 
     await permit.api.syncUser({
-      key: clerkUserId,
+      key: clerkId,
       attributes: {
         email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
       },
     });
 
     // Assign role in the specific company
     await permit.api.assignRole({
-      user: clerkUserId,
+      user: clerkId,
       role: role.toLowerCase(),
-      tenant: companyId,
+      tenant: organizationId,
     });
   } catch (error) {
     console.error("Error syncing single user role to Permit:", error);
@@ -76,12 +80,12 @@ export async function syncSingleUserRole(
   }
 }
 
-export async function removeUserRole(clerkUserId: string, companyId: string) {
+export async function removeUserRole(clerkId: string, organizationId: string) {
   try {
     await permit.api.unassignRole({
-      user: clerkUserId,
+      user: clerkId,
       role: "*", // Remove all roles
-      tenant: companyId,
+      tenant: organizationId,
     });
   } catch (error) {
     console.error("Error removing user role from Permit:", error);
@@ -91,14 +95,14 @@ export async function removeUserRole(clerkUserId: string, companyId: string) {
 
 // Helper function to check permissions
 export async function checkPermission(
-  clerkUserId: string,
-  companyId: string,
+  clerkId: string,
+  organizationId: string,
   action: string
 ) {
   try {
-    const result = await permit.check(clerkUserId, action, {
+    const result = await permit.check(clerkId, action, {
       type: "company",
-      key: companyId,
+      key: organizationId,
     });
     return result;
   } catch (error) {

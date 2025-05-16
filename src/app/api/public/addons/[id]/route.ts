@@ -1,16 +1,14 @@
 import { DIContainer } from "@/lib/di.container";
 import { DITypes } from "@/lib/di.container.types";
 import { prisma } from "@/lib/prisma";
-import { AddonService } from "@/services/addon.service";
 import { Price } from "@/types/price";
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   try {
     // Get the addon by stripe product ID
     const addon = await prisma.addon.findUnique({
@@ -21,7 +19,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Addon not found" }, { status: 404 });
     }
 
-    const stripe = DIContainer.getInstance<Stripe>(DITypes.Stripe);
+    const stripe = DIContainer.getInstance(DITypes.Stripe);
 
     // Fetch all active prices for the product
     const pricesList = await stripe.prices.list({
@@ -39,9 +37,7 @@ export async function PATCH(
       metadata: price.metadata,
     }));
 
-    const addonService = DIContainer.getInstance<AddonService>(
-      DITypes.AddonService
-    );
+    const addonService = DIContainer.getInstance(DITypes.AddonService);
     const updatedAddon = await addonService.updatePrices(id, formattedPrices);
 
     return NextResponse.json(updatedAddon);
@@ -56,9 +52,9 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   try {
     // Deactivate the addon instead of deleting it
     await prisma.addon.update({

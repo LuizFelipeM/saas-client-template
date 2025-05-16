@@ -1,27 +1,20 @@
 import { DIContainer } from "@/lib/di.container";
 import { DITypes } from "@/lib/di.container.types";
 import { UserRole } from "@/lib/prisma";
-import { WebhookEvent } from "@clerk/nextjs/server";
-import { headers } from "next/headers";
+import { isClerkError } from "@/lib/utils";
+import { verifyWebhook } from "@clerk/backend/webhooks";
 import { NextResponse } from "next/server";
-import { Webhook } from "svix";
 
 export async function POST(req: Request) {
   try {
-    const clerkWebhook = new Webhook(process.env.CLERK_SIGNING_SECRET!);
-    const body = await req.text();
-    const headersList = (await headers())
-      .entries()
-      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
-
-    const event = clerkWebhook.verify(body, headersList) as WebhookEvent;
+    const event = await verifyWebhook(req);
 
     const userService = DIContainer.getInstance(DITypes.UserService);
     const prisma = DIContainer.getInstance(DITypes.Prisma);
 
     switch (event.type) {
       case "user.created": {
-        const email = event.data.primary_email_address_id;
+        const email = event.data.email_addresses[0].email_address;
         if (!email) {
           throw new Error("Email not found");
         }
@@ -62,10 +55,16 @@ export async function POST(req: Request) {
         break;
       }
     }
+
+    return NextResponse.json(undefined, { status: 204 });
   } catch (err) {
-    console.error(`Error: Could not verify webhook: ${JSON.stringify(err)}`);
-    throw NextResponse.json(
-      { error: "Error: Verification error" },
+    console.error("Error: Could not process webhook.\n", err);
+    if (isClerkError(err)) {
+      console.error("Clerk error: ", JSON.stringify(err, null, 2));
+    }
+
+    return NextResponse.json(
+      { error: "Error: Could not process webhook" },
       { status: 400 }
     );
   }

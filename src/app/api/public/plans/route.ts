@@ -1,10 +1,8 @@
 import { DIContainer } from "@/lib/di.container";
 import { DITypes } from "@/lib/di.container.types";
 import { prisma } from "@/lib/prisma";
-import { PlanService } from "@/services/plan.service";
 import { Price } from "@/types/price";
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
 
 export async function GET() {
   try {
@@ -44,7 +42,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const stripe = DIContainer.getInstance<Stripe>(DITypes.Stripe);
+    const stripe = DIContainer.getInstance(DITypes.Stripe);
 
     // Fetch the product and prices from Stripe
     const product = await stripe.products.retrieve(stripeProductId);
@@ -71,9 +69,7 @@ export async function POST(req: Request) {
       metadata: price.metadata,
     }));
 
-    const planService = DIContainer.getInstance<PlanService>(
-      DITypes.PlanService
-    );
+    const planService = DIContainer.getInstance(DITypes.PlanService);
     const plan = await planService.createOrUpdate(product, formattedPrices);
 
     return NextResponse.json(plan);

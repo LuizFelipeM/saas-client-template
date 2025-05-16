@@ -1,7 +1,6 @@
 import { DIContainer } from "@/lib/di.container";
 import { DITypes } from "@/lib/di.container.types";
 import { prisma } from "@/lib/prisma";
-import { FeatureService } from "@/services/feature/feature.service";
 import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
@@ -17,9 +16,7 @@ export async function GET(req: Request) {
     where: { id: { in: addonIds } },
   });
 
-  const featureService = DIContainer.getInstance<FeatureService>(
-    DITypes.FeatureService
-  );
+  const featureService = DIContainer.getInstance(DITypes.FeatureService);
   const features = featureService.generateSubscriptionFeatures(plan, addons);
 
   return NextResponse.json(features);

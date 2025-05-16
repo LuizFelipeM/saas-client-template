@@ -13,6 +13,22 @@ networks:
     attachable: true
 
 services:
+  st-app:
+    container_name: st-app
+    build:
+      context: .
+      dockerfile: ./Dockerfile.dev
+    env_file:
+      - ./.env
+    environment:
+      - NODE_ENV=development
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/app
+    networks:
+      - saas-template
+
   # region Cloud services
   # st-rabbitmq:
   #   container_name: st-rabbitmq
@@ -44,18 +60,6 @@ services:
   #     POSTGRES_PASSWORD: password
   #   volumes:
   #     - pgdata:/var/lib/postgresql/data
-  #   networks:
-  #     - saas-template
-
-  # st-nginx:
-  #   container_name: st-nginx
-  #   image: nginx:latest
-  #   volumes:
-  #     - ./nginx.conf:/etc/nginx/nginx.conf
-  #   ports:
-  #     - 80:80
-  #   depends_on:
-  #     - st-api
   #   networks:
   #     - saas-template
   

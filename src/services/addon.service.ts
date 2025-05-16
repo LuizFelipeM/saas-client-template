@@ -8,18 +8,18 @@ import Stripe from "stripe";
 export class AddonService {
   constructor() {}
 
-  private getFeatureType(price: Stripe.Price) {
-    if (price.billing_scheme === "tiered") {
-      return "DEFAULT";
-    }
+  // private getFeatureType(price: Stripe.Price) {
+  //   if (price.billing_scheme === "tiered") {
+  //     return "DEFAULT";
+  //   }
 
-    if (!price.recurring) throw new Error("Price has no recurring");
+  //   if (!price.recurring) throw new Error("Price has no recurring");
 
-    if (price.recurring.usage_type === "licensed") {
-      return "USAGE";
-    }
-    return "METERED";
-  }
+  //   if (price.recurring.usage_type === "licensed") {
+  //     return "USAGE";
+  //   }
+  //   return "METERED";
+  // }
 
   // Create a new addon
   async createOrUpdate(product: Stripe.Product, prices: Price[]) {
@@ -57,12 +57,12 @@ export class AddonService {
       stripeProductId: product.id,
       metadata: metadata,
       key: featureKeys[0],
-      feature: features[featureKeys[0]] as any,
+      feature: features[featureKeys[0]] as unknown as Prisma.JsonObject,
       // JSON.stringify({
       //   ...features[featureKeys[0]],
       //   type: this.getFeatureType(price),
       // }),
-      prices: prices as any,
+      prices: prices as unknown as Prisma.JsonObject,
       isActive: true,
     };
 
@@ -77,7 +77,7 @@ export class AddonService {
     return prisma.addon.update({
       where: { stripeProductId },
       data: {
-        prices: prices as any,
+        prices: prices as unknown as Prisma.JsonObject,
       },
     });
   }

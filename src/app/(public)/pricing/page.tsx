@@ -20,7 +20,6 @@ type Plan = {
   id: string;
   name: string;
   description?: string | null;
-  metadata: Record<string, any>;
   stripeProductId: string;
   features: Record<string, Feature>;
   prices: Price[];
@@ -183,8 +182,9 @@ export default function PricingPage() {
         style: "currency",
         currency: currencyCode,
       }).format(amount);
-    } catch (e) {
+    } catch (error) {
       // Fallback for invalid currency code, though ideally currency codes from Stripe are valid
+      console.error("Error formatting currency:", error);
       return `${currencyCode} ${amount.toFixed(2)}`;
     }
   };

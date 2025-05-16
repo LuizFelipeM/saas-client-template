@@ -1,15 +1,13 @@
 import { DITypes } from "@/lib/di.container.types";
 import { PrismaClient, UserRole } from "@/lib/prisma";
-import type { ClerkClient } from "@clerk/backend";
+import { clerkClient } from "@clerk/nextjs/server";
 import { inject, injectable } from "inversify";
 
 @injectable()
 export class OrganizationService {
   constructor(
     @inject(DITypes.Prisma)
-    private readonly prisma: PrismaClient,
-    @inject(DITypes.Clerk)
-    private readonly clerk: ClerkClient
+    private readonly prisma: PrismaClient
   ) {}
 
   async getOrganization(id: string) {
@@ -19,7 +17,8 @@ export class OrganizationService {
   }
 
   async create(name: string, userId: string) {
-    const clerkOrg = await this.clerk.organizations.createOrganization({
+    const clerk = await clerkClient();
+    const clerkOrg = await clerk.organizations.createOrganization({
       name,
       createdBy: userId,
     });
@@ -34,7 +33,8 @@ export class OrganizationService {
   }
 
   async addUser(organizationId: string, userId: string, role: UserRole) {
-    await this.clerk.organizations.createOrganizationMembership({
+    const clerk = await clerkClient();
+    await clerk.organizations.createOrganizationMembership({
       organizationId,
       userId,
       role,

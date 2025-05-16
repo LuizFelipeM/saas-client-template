@@ -17,7 +17,6 @@ interface DynamicFormFieldProps {
 
 export const DynamicFormField: React.FC<DynamicFormFieldProps> = ({
   id,
-  title,
   type,
   metadata,
   value,

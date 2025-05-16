@@ -31,8 +31,8 @@ export class PlanService {
       description: product.description ?? null,
       stripeProductId: product.id,
       metadata,
-      features: features as any,
-      prices: prices as any,
+      features: features as unknown as Prisma.JsonObject,
+      prices: prices as unknown as Prisma.JsonObject,
       isActive: true,
     };
 
@@ -47,7 +47,7 @@ export class PlanService {
     return prisma.plan.update({
       where: { stripeProductId },
       data: {
-        prices: prices as any,
+        prices: prices as unknown as Prisma.JsonObject,
       },
     });
   }

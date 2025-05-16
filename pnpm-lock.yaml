@@ -107,6 +107,9 @@ importers:
       tsx:
         specifier: ^4.19.4
         version: 4.19.4
+      webhooks:
+        specifier: link:@clerk/nextjs/webhooks
+        version: link:@clerk/nextjs/webhooks
       zod:
         specifier: ^3.24.2
         version: 3.24.2

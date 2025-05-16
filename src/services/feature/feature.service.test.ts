@@ -1,23 +1,14 @@
-import { FeatureType } from "@/lib/prisma";
-import { Feature } from "@/types/feature";
+import { Addon, FeatureType, Plan } from "@/lib/prisma";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { FeatureService } from "../feature/feature.service";
-
-// Mock the Prisma types for testing
-type MockPlan = {
-  features: Record<string, Feature>;
-};
-
-type MockAddon = {
-  key: string;
-  feature: Feature;
-};
 
 // Mock the utils module
 vi.mock("@/lib/utils", () => ({
   hasDuplicates: vi
     .fn()
-    .mockImplementation((array: any[]) => new Set(array).size !== array.length),
+    .mockImplementation(
+      (array: string[]) => new Set(array).size !== array.length
+    ),
 }));
 
 describe("FeatureService", () => {
@@ -35,16 +26,16 @@ describe("FeatureService", () => {
         features: {
           feature1: { type: "DEFAULT" as FeatureType },
         },
-      } as unknown as MockPlan;
+      } as unknown as Plan;
 
       const addons = [
         { key: "addon1", feature: { type: "DEFAULT" as FeatureType } },
         { key: "addon1", feature: { type: "USAGE" as FeatureType } },
-      ] as unknown as MockAddon[];
+      ] as unknown as Addon[];
 
       // Act & Assert
       expect(() =>
-        featureService.generateSubscriptionFeatures(plan as any, addons as any)
+        featureService.generateSubscriptionFeatures(plan, addons)
       ).toThrow(
         "Only one addon of the same feature is allowed to be added, please remove the duplicate addon"
       );
@@ -60,7 +51,7 @@ describe("FeatureService", () => {
             metadata: { min: 10, max: 100 },
           },
         },
-      } as unknown as MockPlan;
+      } as unknown as Plan;
 
       const addons = [
         {
@@ -71,13 +62,10 @@ describe("FeatureService", () => {
           key: "addon2",
           feature: { type: "USAGE" as FeatureType },
         },
-      ] as unknown as MockAddon[];
+      ] as unknown as Addon[];
 
       // Act
-      const result = featureService.generateSubscriptionFeatures(
-        plan as any,
-        addons as any
-      );
+      const result = featureService.generateSubscriptionFeatures(plan, addons);
 
       // Assert
       expect(result).toEqual({
@@ -97,7 +85,7 @@ describe("FeatureService", () => {
             metadata: { min: 10, max: 100 },
           },
         },
-      } as unknown as MockPlan;
+      } as unknown as Plan;
 
       const addons = [
         {
@@ -107,13 +95,10 @@ describe("FeatureService", () => {
             metadata: { min: 5, max: 50 },
           },
         },
-      ] as unknown as MockAddon[];
+      ] as unknown as Addon[];
 
       // Act
-      const result = featureService.generateSubscriptionFeatures(
-        plan as any,
-        addons as any
-      );
+      const result = featureService.generateSubscriptionFeatures(plan, addons);
 
       // Assert
       expect(result).toEqual({
@@ -133,7 +118,7 @@ describe("FeatureService", () => {
             metadata: { min: null, max: 100 },
           },
         },
-      } as unknown as MockPlan;
+      } as unknown as Plan;
 
       const addons = [
         {
@@ -143,13 +128,10 @@ describe("FeatureService", () => {
             metadata: { min: 5 },
           },
         },
-      ] as unknown as MockAddon[];
+      ] as unknown as Addon[];
 
       // Act
-      const result = featureService.generateSubscriptionFeatures(
-        plan as any,
-        addons as any
-      );
+      const result = featureService.generateSubscriptionFeatures(plan, addons);
 
       // Assert
       expect(result).toEqual({
@@ -169,7 +151,7 @@ describe("FeatureService", () => {
             metadata: { min: -10, max: 100 },
           },
         },
-      } as unknown as MockPlan;
+      } as unknown as Plan;
 
       const addons = [
         {
@@ -179,13 +161,10 @@ describe("FeatureService", () => {
             metadata: { min: -5, max: 50 },
           },
         },
-      ] as unknown as MockAddon[];
+      ] as unknown as Addon[];
 
       // Act
-      const result = featureService.generateSubscriptionFeatures(
-        plan as any,
-        addons as any
-      );
+      const result = featureService.generateSubscriptionFeatures(plan, addons);
 
       // Assert
       expect(result).toEqual({
@@ -202,7 +181,7 @@ describe("FeatureService", () => {
         features: {
           feature1: { type: "DEFAULT" as FeatureType },
         },
-      } as unknown as MockPlan;
+      } as unknown as Plan;
 
       const addons = [
         {
@@ -212,13 +191,10 @@ describe("FeatureService", () => {
             metadata: { min: 5, max: 50 },
           },
         },
-      ] as unknown as MockAddon[];
+      ] as unknown as Addon[];
 
       // Act
-      const result = featureService.generateSubscriptionFeatures(
-        plan as any,
-        addons as any
-      );
+      const result = featureService.generateSubscriptionFeatures(plan, addons);
 
       // Assert
       expect(result).toEqual({
@@ -236,7 +212,7 @@ describe("FeatureService", () => {
         features: {
           feature1: { type: "DEFAULT" as FeatureType },
         },
-      } as unknown as MockPlan;
+      } as unknown as Plan;
 
       const addons = [
         {
@@ -246,13 +222,10 @@ describe("FeatureService", () => {
             metadata: { min: 5, max: 50 },
           },
         },
-      ] as unknown as MockAddon[];
+      ] as unknown as Addon[];
 
       // Act
-      const result = featureService.generateSubscriptionFeatures(
-        plan as any,
-        addons as any
-      );
+      const result = featureService.generateSubscriptionFeatures(plan, addons);
 
       // Assert
       expect(result).toEqual({
@@ -273,15 +246,12 @@ describe("FeatureService", () => {
             metadata: { min: 10, max: 100 },
           },
         },
-      } as unknown as MockPlan;
+      } as unknown as Plan;
 
-      const addons: MockAddon[] = [];
+      const addons: Addon[] = [];
 
       // Act
-      const result = featureService.generateSubscriptionFeatures(
-        plan as any,
-        addons as any
-      );
+      const result = featureService.generateSubscriptionFeatures(plan, addons);
 
       // Assert
       expect(result).toEqual({

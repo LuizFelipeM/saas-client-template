@@ -1,36 +1,52 @@
-import { Prisma, PrismaClient } from "../src/lib/generated/prisma";
+import { Prisma, PrismaClient } from "@/lib/prisma";
 
 const prisma = new PrismaClient();
 
 const userData: Prisma.UserCreateInput[] = [
   {
-    name: "Alice",
     email: "alice@prisma.io",
-    posts: {
-      create: [
-        {
-          title: "Join the Prisma Discord",
-          content: "https://pris.ly/discord",
-          published: true,
+    clerkId: "user_2t34567890",
+    organizations: {
+      create: {
+        role: "OWNER",
+        organization: {
+          create: {
+            clerkId: "org_2t34567890",
+            name: "Alice's Organization",
+            slug: "alice-org",
+          },
         },
-        {
-          title: "Prisma on YouTube",
-          content: "https://pris.ly/youtube",
-        },
-      ],
+      },
     },
   },
   {
-    name: "Bob",
-    email: "bob@prisma.io",
-    posts: {
-      create: [
-        {
-          title: "Follow Prisma on Twitter",
-          content: "https://www.twitter.com/prisma",
-          published: true,
+    email: "bob.o.bobo@prisma.io",
+    clerkId: "user_2t34567891",
+    organizations: {
+      create: {
+        role: "VIEWER",
+        organization: {
+          connect: {
+            clerkId: "org_2t34567890",
+          },
         },
-      ],
+      },
+    },
+  },
+  {
+    email: "bob@prisma.io",
+    clerkId: "user_2t34567892",
+    organizations: {
+      create: {
+        role: "OWNER",
+        organization: {
+          create: {
+            clerkId: "org_2t34567891",
+            name: "Bob's Organization",
+            slug: "bob-org",
+          },
+        },
+      },
     },
   },
 ];
