@@ -60,9 +60,15 @@ export class PlanService {
     return plan?.features;
   }
 
-  async getPlanById(planId: string) {
+  async getById(planId: string) {
     return prisma.plan.findUnique({
       where: { id: planId },
+    });
+  }
+
+  async getActivePlanById(planId: string) {
+    return prisma.plan.findUnique({
+      where: { id: planId, isActive: true },
     });
   }
 

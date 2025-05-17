@@ -22,27 +22,52 @@ export async function POST(req: Request) {
         const organizationId = event.data.organization_memberships?.[0]?.id;
         const userId = event.data.id;
 
-        await userService.create(userId, email);
+        const errors: Error[] = [];
 
-        const organizationService = DIContainer.getInstance(
-          DITypes.OrganizationService
-        );
-        if (organizationId) {
-          const organization = await prisma.organization.findUnique({
-            where: { clerkId: organizationId },
-          });
+        try {
+          await userService.sync(userId, email);
+        } catch (error) {
+          console.error("Error: Could not sync user.\n", error);
+          errors.push(error as Error);
+        }
 
-          if (organization) {
-            await organizationService.addUser(
-              organization.id,
-              userId,
-              UserRole.VIEWER
-            );
+        try {
+          const organizationService = DIContainer.getInstance(
+            DITypes.OrganizationService
+          );
+
+          const organizationName = `${
+            event.data.first_name ??
+            event.data.email_addresses[0].email_address.split("@")[0]
+          }'s Organization`;
+
+          if (organizationId) {
+            const organization = await prisma.organization.findUnique({
+              where: { clerkId: organizationId },
+            });
+
+            if (organization) {
+              await organizationService.addUser(
+                organization.id,
+                userId,
+                UserRole.VIEWER
+              );
+            } else {
+              await organizationService.create(organizationName, userId);
+            }
           } else {
-            await organizationService.create("Organization Name", userId);
+            await organizationService.create(organizationName, userId);
           }
-        } else {
-          await organizationService.create("Organization Name", userId);
+        } catch (error) {
+          console.error("Error: Could not create organization.\n", error);
+          errors.push(error as Error);
+        }
+
+        if (errors.length > 0) {
+          throw new AggregateError(
+            errors,
+            "Error: Could not sync user and create organization."
+          );
         }
         break;
       }
@@ -56,7 +81,7 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json(undefined, { status: 204 });
+    return new Response(null, { status: 204 });
   } catch (err) {
     console.error("Error: Could not process webhook.\n", err);
     if (isClerkError(err)) {

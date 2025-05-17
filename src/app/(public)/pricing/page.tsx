@@ -1,5 +1,6 @@
 "use client";
 
+import BillingToggle from "@/components/pricing/BillingToggle";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -8,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Toggle } from "@/components/ui/toggle";
 import { Feature } from "@/types/feature";
 import { Price } from "@/types/price";
 import { useAuth, useClerk, useUser } from "@clerk/nextjs";
@@ -192,31 +192,18 @@ export default function PricingPage() {
   return (
     <div className="container mx-auto px-4 py-16">
       <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold mb-4">Choose Your Plan</h1>
+        <h1 className="text-4xl font-bold mb-4">Escolha seu plano</h1>
         <p className="text-muted-foreground">
           {/* Display a general description or a specific one if available */}
-          Select the perfect plan for your business needs
+          Escolha o plano perfeito para suas necessidades
         </p>
       </div>
 
-      <div className="flex justify-center mb-8 space-x-2">
-        <Toggle
-          variant="outline"
-          pressed={!isYearly}
-          onPressedChange={() => setIsYearly(false)}
-          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-        >
-          Monthly
-        </Toggle>
-        <Toggle
-          variant="outline"
-          pressed={isYearly}
-          onPressedChange={() => setIsYearly(true)}
-          className="data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
-        >
-          Yearly
-        </Toggle>
-      </div>
+      <BillingToggle
+        isYearly={isYearly}
+        onChange={(value) => setIsYearly(value)}
+        yearlySavingsPercent={20}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {plans.map((plan) => (
@@ -233,7 +220,7 @@ export default function PricingPage() {
                   {formatCurrency(getPriceAmount(plan), getCurrency(plan))}
                 </span>
                 <span className="text-muted-foreground">
-                  /{isYearly ? "year" : "month"}
+                  /{isYearly ? "ano" : "mês"}
                 </span>
               </div>
             </CardHeader>
@@ -242,13 +229,17 @@ export default function PricingPage() {
                 {Object.entries(plan.features || {}).map(([key, feature]) => (
                   <li key={key} className="flex items-center">
                     <Check className="mr-2 h-4 w-4 text-primary" />
-                    {key} {/* Use the key as the feature name/title */}
+                    {key}
                     {feature.type === "USAGE" && (
                       <span className="ml-1 text-xs text-muted-foreground">
                         (Usage-based)
                       </span>
                     )}
-                    {/* Add other feature type specific displays if needed e.g. METERED or DEFAULT values */}
+                    {feature.type === "METERED" && (
+                      <span className="ml-1 text-xs text-muted-foreground">
+                        (Metered)
+                      </span>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -262,9 +253,9 @@ export default function PricingPage() {
                 {!isLoaded ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : getStripePriceId(plan) ? (
-                  "Select Plan"
+                  "Escolher plano"
                 ) : (
-                  "Unavailable"
+                  "Indisponível"
                 )}
               </Button>
             </CardFooter>

@@ -1,7 +1,7 @@
 import { DIContainer } from "@/lib/di.container";
 import { DITypes } from "@/lib/di.container.types";
-import { prisma } from "@/lib/prisma";
 import { Price } from "@/types/price";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
@@ -18,13 +18,16 @@ export async function POST(req: Request) {
       );
     }
 
-    // Get the plan details
-    const plan = await prisma.plan.findUniqueOrThrow({
-      where: {
-        id: planId,
-        isActive: true,
-      },
-    });
+    const { userId } = await auth();
+    const userService = DIContainer.getInstance(DITypes.UserService);
+    const user = await userService.getByClerkId(userId!);
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const planService = DIContainer.getInstance(DITypes.PlanService);
+    const plan = await planService.getActivePlanById(planId);
 
     if (!plan) {
       return NextResponse.json({ error: "Plan not found" }, { status: 404 });
@@ -46,6 +49,7 @@ export async function POST(req: Request) {
 
     // Create a Stripe checkout session
     const session = await stripe.checkout.sessions.create({
+      customer: user.stripeId!,
       payment_method_types: ["card"],
       line_items: [
         {

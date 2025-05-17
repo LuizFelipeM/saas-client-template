@@ -46,7 +46,7 @@ export class SubscriptionService {
       throw new Error("Failed to retrieve subscription");
     }
 
-    const plan = await this.planService.getPlanById(planId);
+    const plan = await this.planService.getById(planId);
     if (!plan) {
       throw new Error("Plan not found");
     }

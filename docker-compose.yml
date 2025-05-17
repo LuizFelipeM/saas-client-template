@@ -15,6 +15,7 @@ networks:
 services:
   st-app:
     container_name: st-app
+    restart: unless-stopped
     build:
       context: .
       dockerfile: ./Dockerfile.dev
