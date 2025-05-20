@@ -124,8 +124,6 @@ export function useOrganizationSubscription(organizationId: string) {
         return {
           plan: currentSubscription.planId,
           status: currentSubscription.status,
-          currentPeriodEnd: currentSubscription.currentPeriodEnd,
-          // metadata: currentSubscription.plan.metadata,
         };
       } catch (error) {
         console.error("Error fetching organization subscription:", error);

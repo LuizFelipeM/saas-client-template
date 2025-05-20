@@ -85,7 +85,7 @@ services:
   st-permitio:
     container_name: st-permitio
     image: permitio/pdp-v2:latest
-    restart: always
+    # restart: always
     env_file:
       - ./.env
     ports:

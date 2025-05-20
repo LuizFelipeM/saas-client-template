@@ -29,7 +29,9 @@ export class SubscriptionService {
     }
 
     const planId: string = session.metadata.planId;
-    const addonIds: string[] = JSON.parse(session.metadata.addonIds);
+    const addonIds: string[] = session.metadata.addonIds
+      ? JSON.parse(session.metadata.addonIds)
+      : [];
     const organizationId: string = session.metadata.organizationId;
 
     if (!planId || !organizationId) {
@@ -67,7 +69,6 @@ export class SubscriptionService {
         planId,
         status: "TRIALING",
         stripeSubscriptionId: subscriptionId,
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
         features: JSON.stringify(features),
       },
     });
@@ -90,7 +91,6 @@ export class SubscriptionService {
       where: { stripeSubscriptionId: subscriptionId },
       data: {
         status: "ACTIVE",
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
       },
     });
   }
@@ -118,9 +118,6 @@ export class SubscriptionService {
       data: {
         planId,
         status: subscription.status.toUpperCase() as SubscriptionStatus,
-        currentPeriodEnd: new Date(
-          (subscription as StripeSubscription).current_period_end * 1000
-        ),
         features,
       },
     });

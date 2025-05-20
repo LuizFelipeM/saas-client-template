@@ -46,8 +46,19 @@ export async function POST(req: Request) {
     }
 
     const stripe = DIContainer.getInstance(DITypes.Stripe);
+    const organizationService = DIContainer.getInstance(
+      DITypes.OrganizationService
+    );
 
-    // Create a Stripe checkout session
+    const organization = await organizationService.getByClerkId(organizationId);
+    if (!organization) {
+      console.error("Organization not found", organizationId);
+      return NextResponse.json(
+        { error: "Organization not found" },
+        { status: 404 }
+      );
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: user.stripeId!,
       payment_method_types: ["card"],
@@ -58,16 +69,17 @@ export async function POST(req: Request) {
         },
       ],
       mode: "subscription",
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/success`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
       metadata: {
         planId,
-        organizationId,
+        organizationId: organization.id,
       },
       subscription_data: {
         metadata: {
           planId,
-          organizationId,
+          organizationId: organization.id,
+          userId,
         },
       },
     });

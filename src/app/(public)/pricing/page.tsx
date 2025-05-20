@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import { Feature } from "@/types/feature";
 import { Price } from "@/types/price";
 import { useAuth, useClerk, useUser } from "@clerk/nextjs";
@@ -28,12 +29,13 @@ type Plan = {
 export default function PricingPage() {
   const router = useRouter();
 
+  const { toast } = useToast();
   const { getToken } = useAuth();
   const { user, isSignedIn, isLoaded } = useUser();
   const { redirectToSignIn } = useClerk();
 
   const [plans, setPlans] = useState<Plan[]>([]);
-  const [isLoading, setIsLoading] = useState(true); // Single loading state
+  const [isLoading, setIsLoading] = useState(true);
   const [isYearly, setIsYearly] = useState(false);
 
   useEffect(() => {
@@ -56,7 +58,10 @@ export default function PricingPage() {
         setPlans(plansData);
       } catch (error) {
         console.error("Error fetching plans:", error);
-        // Handle plan fetch error appropriately
+        toast({
+          title: "Erro ao buscar planos",
+          description: "Por favor, tente novamente mais tarde.",
+        });
       } finally {
         setIsLoading(false);
       }
@@ -111,15 +116,20 @@ export default function PricingPage() {
       return;
     }
 
+    setIsLoading(true);
     const priceId = getStripePriceId(plan);
     if (!priceId) {
       console.error(
-        "Selected price ID not found for plan:",
+        "Price not found in plan:",
         plan.name,
         " Yearly:",
         isYearly
       );
-      alert("Sorry, the selected pricing option is not available.");
+      toast({
+        title: "Erro ao buscar plano",
+        description: "Por favor, tente novamente mais tarde.",
+      });
+      setIsLoading(false);
       return;
     }
 
@@ -151,16 +161,20 @@ export default function PricingPage() {
       router.push(url);
     } catch (error) {
       console.error("Error creating checkout session:", error);
-      alert(
-        "There was an issue starting the checkout process. Please try again."
-      );
+      toast({
+        title: "Erro ao iniciar checkout",
+        description:
+          "Houve um problema ao iniciar o processo de checkout. Por favor, tente novamente.",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (isLoading) {
+  if (isLoading && !plans.length) {
     return (
       <div className="container mx-auto px-4 py-16">
-        <div className="text-center">Loading plans and pricing...</div>
+        <div className="text-center">Carregando planos e preços...</div>
       </div>
     );
   }
@@ -169,7 +183,8 @@ export default function PricingPage() {
     return (
       <div className="container mx-auto px-4 py-16">
         <div className="text-center text-red-600">
-          No plans available at the moment. Please try again later.
+          Nenhum plano disponível no momento. Por favor, tente novamente mais
+          tarde.
         </div>
       </div>
     );
@@ -248,9 +263,9 @@ export default function PricingPage() {
               <Button
                 className="w-full"
                 onClick={() => handleCheckout(plan)}
-                disabled={!getStripePriceId(plan) || !isLoaded}
+                disabled={!getStripePriceId(plan) || !isLoaded || isLoading}
               >
-                {!isLoaded ? (
+                {!isLoaded || isLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : getStripePriceId(plan) ? (
                   "Escolher plano"

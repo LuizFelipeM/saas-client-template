@@ -16,6 +16,12 @@ export class OrganizationService {
     });
   }
 
+  async getByClerkId(clerkId: string) {
+    return await this.prisma.organization.findUnique({
+      where: { clerkId },
+    });
+  }
+
   async create(name: string, userId: string) {
     const clerk = await clerkClient();
     const clerkOrg = await clerk.organizations.createOrganization({

@@ -66,6 +66,7 @@ export class FeatureService {
       {}
     );
 
-    return this.mergeFeatures(planFeatures, addonFeatures);
+    const features = this.mergeFeatures(planFeatures, addonFeatures);
+    return features;
   }
 }
