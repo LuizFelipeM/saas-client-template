@@ -1,0 +1,12 @@
+version: 3
+
+agent:
+  log_level: info
+  log: stdout
+
+endpoints:
+  - name: nextjs
+    description: Next.js tunnel
+    url: lenient-really-badger.ngrok-free.app
+    upstream:
+      url: st-web-app:3000

@@ -1,0 +1,114 @@
+name: saas-template
+
+# volumes:
+  # region Cloud services
+  # pgdata:
+  # rabbitmqdata:
+  # rabbitmqlog:
+  # endregion
+
+networks:
+  saas-template:
+    driver: bridge
+    attachable: true
+
+services:
+  st-web-app:
+    container_name: st-web-app
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile.web-app.dev
+    env_file:
+      - ../apps/web-app/.env
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+    ports:
+      - 3000:3000
+    volumes:
+      - ../apps/web-app:/app/apps/web-app
+    command:
+      - "pnpm"
+      - "web-app:dev"
+    networks:
+      - saas-template
+  
+  st-bg-server:
+    depends_on:
+      - st-redis
+    container_name: st-bg-server
+    restart: unless-stopped
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile.bg-server.dev
+    env_file:
+      - ../apps/bg-server/.env
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+    ports:
+      - 3001:3001
+    volumes:
+      - ../apps/bg-server:/app/apps/bg-server
+    command:
+      - "pnpm"
+      - "bg-server:dev"
+    networks:
+      - saas-template
+
+  # region Cloud services
+  st-redis:
+    container_name: st-redis
+    image: redis:alpine
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    networks:
+      - saas-template
+
+  # st-postgres:
+  #   container_name: st-postgres
+  #   image: postgres:17
+  #   restart: always
+  #   shm_size: 128mb
+  #   environment:
+  #     POSTGRES_DB: database
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: password
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #   networks:
+  #     - saas-template
+  
+  st-ngrok:
+    container_name: st-ngrok
+    image: ngrok/ngrok:alpine
+    restart: unless-stopped
+    env_file:
+      - ../.env
+    command:
+      - "start"
+      - "--all"
+      - "--config"
+      - "/etc/ngrok.yml"
+    volumes:
+      - ../ngrok.yml:/etc/ngrok.yml
+    ports:
+      - 4040:4040
+    networks:
+      - saas-template
+  
+  st-permitio:
+    container_name: st-permitio
+    image: permitio/pdp-v2:latest
+    # restart: always
+    env_file:
+      - ../.env
+    ports:
+      - 7766:7000
+    networks:
+      - saas-template
+  
+  # endregion
+

@@ -1,0 +1,97 @@
+version: 1
+
+# Define resources
+resources:
+  organization:
+    type: tenant
+    actions:
+      - view_dashboard
+      - edit_content
+      - manage_billing
+      - invite_user
+      - delete_organization
+      - view_analytics
+      - manage_users
+    attributes:
+      - id: string
+      - name: string
+
+# Define roles
+roles:
+  owner:
+    permissions:
+      - action: view_dashboard
+        resource: organization
+      - action: edit_content
+        resource: organization
+      - action: manage_billing
+        resource: organization
+      - action: invite_user
+        resource: organization
+      - action: delete_organization
+        resource: organization
+      - action: view_analytics
+        resource: organization
+      - action: manage_users
+        resource: organization
+
+  admin:
+    permissions:
+      - action: view_dashboard
+        resource: organization
+      - action: edit_content
+        resource: organization
+      - action: view_billing
+        resource: organization
+      - action: invite_user
+        resource: organization
+      - action: view_analytics
+        resource: organization
+      - action: manage_users
+        resource: organization
+
+  editor:
+    permissions:
+      - action: view_dashboard
+        resource: organization
+      - action: edit_content
+        resource: organization
+      - action: view_analytics
+        resource: organization
+
+  viewer:
+    permissions:
+      - action: view_dashboard
+        resource: organization
+      - action: view_analytics
+        resource: organization
+
+# Define role assignments
+role_assignments:
+  - role: owner
+    resource: organization
+    conditions:
+      - attribute: role
+        operator: equals
+        value: owner
+
+  - role: admin
+    resource: organization
+    conditions:
+      - attribute: role
+        operator: equals
+        value: admin
+
+  - role: editor
+    resource: organization
+    conditions:
+      - attribute: role
+        operator: equals
+        value: editor
+
+  - role: viewer
+    resource: organization
+    conditions:
+      - attribute: role
+        operator: equals
+        value: viewer 

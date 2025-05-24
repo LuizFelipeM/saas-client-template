@@ -1,0 +1,27 @@
+{
+  "name": "bg-server",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch --include 'src/**/*.ts' ./src/server.ts",
+    "dev:local": "tsx watch --env-file=./.env --include 'src/**/*.ts' ./src/server.ts",
+    "build": "tsc",
+    "start": "node build/server.js"
+  },
+  "dependencies": {
+    "@bull-board/api": "^6.9.6",
+    "@bull-board/express": "^6.9.6",
+    "bullmq": "^5.53.0",
+    "express": "^5.1.0",
+    "express-basic-auth": "^1.2.1",
+    "inversify": "^7.5.1",
+    "ioredis": "^5.6.1",
+    "reflect-metadata": "^0.2.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.2",
+    "@types/node": "^20",
+    "tsx": "^4.19.4",
+    "typescript": "^5"
+  }
+}
