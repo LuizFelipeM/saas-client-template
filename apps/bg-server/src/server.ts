@@ -1,5 +1,6 @@
 import express from "express";
 import basicAuth from "express-basic-auth";
+import { initializeQueueProcessors } from "queues/processors";
 import { serverAdapter } from "./configs/bull";
 
 if (
@@ -38,6 +39,8 @@ app.get("/health", (req, res) => {
 
 // Start the server
 app.listen(port, () => {
+  initializeQueueProcessors();
+
   console.log(`\nServer is running on port ${port}`);
   console.log(
     `Bull Board is available at http://localhost:${port}${bullBoardPath}`

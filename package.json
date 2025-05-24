@@ -8,16 +8,10 @@
     "seed": "prisma db seed",
     "test": "vitest run",
     "test:watch": "vitest",
+    "build": "pnpm pkg-queues build && pnpm web-app build && pnpm bg-server build",
+    "pkg-queues": "pnpm --filter @packages/queues",
     "web-app": "pnpm --filter web-app",
-    "web-app:dev": "pnpm --filter web-app dev",
-    "web-app:debug": "pnpm --filter web-app debug",
-    "web-app:build": "pnpm --filter web-app build",
-    "web-app:start": "pnpm --filter web-app start",
-    "web-app:lint": "pnpm --filter web-app lint",
-    "bg-server": "pnpm --filter bg-server",
-    "bg-server:dev": "pnpm --filter bg-server dev",
-    "bg-server:build": "pnpm --filter bg-server build",
-    "bg-server:start": "pnpm --filter bg-server start"
+    "bg-server": "pnpm --filter bg-server"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -28,9 +28,11 @@ services:
       - 3000:3000
     volumes:
       - ../apps/web-app:/app/apps/web-app
+      - ../packages:/app/packages
     command:
       - "pnpm"
-      - "web-app:dev"
+      - "web-app"
+      - "dev"
     networks:
       - saas-template
   
@@ -51,9 +53,11 @@ services:
       - 3001:3001
     volumes:
       - ../apps/bg-server:/app/apps/bg-server
+      - ../packages:/app/packages
     command:
       - "pnpm"
-      - "bg-server:dev"
+      - "bg-server"
+      - "dev"
     networks:
       - saas-template
 

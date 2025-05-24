@@ -1,11 +1,19 @@
 import { createBullBoard } from "@bull-board/api";
 import { BullMQAdapter } from "@bull-board/api/bullMQAdapter";
 import { ExpressAdapter } from "@bull-board/express";
-import { stripeWebhookQueue } from "../jobs/stripe-webhook/stripeWebhook.queue";
+import { queueManager } from "@packages/queues";
 
 export const serverAdapter = new ExpressAdapter();
 
-createBullBoard({
-  queues: [new BullMQAdapter(stripeWebhookQueue)],
+const { addQueue, removeQueue } = createBullBoard({
+  queues: queueManager.getAllQueues().map((queue) => new BullMQAdapter(queue)),
   serverAdapter,
+});
+
+queueManager.subscribe("queueCreated", (queue) => {
+  addQueue(new BullMQAdapter(queue));
+});
+
+queueManager.subscribe("queueRemoved", (queue) => {
+  removeQueue(new BullMQAdapter(queue));
 });
