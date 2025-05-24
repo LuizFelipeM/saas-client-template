@@ -1,6 +1,11 @@
+packages:
+  - apps/*
+ignoredBuiltDependencies:
+  - msgpackr-extract
 onlyBuiltDependencies:
   - '@clerk/shared'
   - '@prisma/client'
   - '@prisma/engines'
   - esbuild
   - prisma
+  - sharp

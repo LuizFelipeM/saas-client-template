@@ -9,4 +9,4 @@ endpoints:
     description: Next.js tunnel
     url: lenient-really-badger.ngrok-free.app
     upstream:
-      url: st-app:3000
+      url: st-web-app:3000

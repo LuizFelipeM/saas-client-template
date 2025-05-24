@@ -3,6 +3,7 @@ import { DITypes } from "@/lib/di.container.types";
 import { Price } from "@/types/price";
 import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import Stripe from "stripe";
 
 export async function POST(req: Request) {
   try {
@@ -59,30 +60,43 @@ export async function POST(req: Request) {
       );
     }
 
-    const session = await stripe.checkout.sessions.create({
-      customer: user.stripeId!,
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price: (price as Price).id,
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/success`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
-      metadata: {
-        planId,
-        organizationId: organization.id,
-      },
-      subscription_data: {
+    let session: Stripe.Response<Stripe.Checkout.Session>;
+    try {
+      session = await stripe.checkout.sessions.create({
+        customer: user.stripeId!,
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price: (price as Price).id,
+            quantity: 1,
+          },
+        ],
+        mode: "subscription",
+        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/success`,
+        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
         metadata: {
           planId,
           organizationId: organization.id,
           userId,
         },
-      },
-    });
+        subscription_data: {
+          metadata: {
+            planId,
+            organizationId: organization.id,
+            userId,
+          },
+        },
+      });
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      return NextResponse.json(
+        {
+          error:
+            "Failed to create checkout session. Please refresh and try again.",
+        },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({ url: session.url });
   } catch (error) {

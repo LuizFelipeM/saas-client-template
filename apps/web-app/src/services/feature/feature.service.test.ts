@@ -1,6 +1,6 @@
 import { Addon, FeatureType, Plan } from "@/lib/prisma";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { FeatureService } from "../feature/feature.service";
+import { FeatureService } from "./feature.service";
 
 // Mock the utils module
 vi.mock("@/lib/utils", () => ({
