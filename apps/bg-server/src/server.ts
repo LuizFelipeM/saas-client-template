@@ -1,6 +1,6 @@
 import express from "express";
 import basicAuth from "express-basic-auth";
-import { initializeQueueProcessors } from "queues/processors";
+import { registerWorkers } from "processors";
 import { serverAdapter } from "./configs/bull";
 
 if (
@@ -39,7 +39,7 @@ app.get("/health", (req, res) => {
 
 // Start the server
 app.listen(port, () => {
-  initializeQueueProcessors();
+  registerWorkers();
 
   console.log(`\nServer is running on port ${port}`);
   console.log(
