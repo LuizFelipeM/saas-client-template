@@ -2,10 +2,6 @@ import { queueManager, SharedQueues } from "@packages/queues";
 
 export const initializeQueueProcessors = () => {
   // Create queues (same as in web-app)
-  queueManager.createQueue({
-    name: SharedQueues.STRIPE_WEBHOOKS,
-  });
-
   queueManager.createWorker(
     SharedQueues.STRIPE_WEBHOOKS,
     async (job, token) => {

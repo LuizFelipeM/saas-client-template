@@ -5,8 +5,6 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    queueManager.createQueue({ name: SharedQueues.STRIPE_WEBHOOKS });
-
     // Add job to queue
     await queueManager.addJob(SharedQueues.STRIPE_WEBHOOKS, body);
 
